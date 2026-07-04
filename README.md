@@ -34,10 +34,13 @@ O app **nunca fala diretamente com o Databricks**: o Databricks materializa os i
 docs/
   architecture.md            # Arquitetura, camadas Clean Architecture, decisões
   databricks-integration.md  # Fluxo Supabase ↔ Databricks (ingestão, IA, write-back)
-  home-screen.md             # Esboço de componentes da tela Home
+  home-screen.md             # Deck de swipe (tela Descobrir)
+  mvp-copa-stickers.md       # Vertical de arranque: figurinhas da Copa
 supabase/
   migrations/
-    0001_initial_schema.sql  # Esquema completo do MVP com RLS e índices
+    0001_initial_schema.sql  # Esquema base do MVP com RLS e índices
+    0002_marketplace.sql     # Venda (for_sale/preço) + swipes
+    0003_copa_stickers.sql   # Álbuns, progresso, match de repetidas, troca justa
 mobile/                      # App React Native + Expo (TypeScript)
   src/
     app/                     # Rotas (Expo Router): tabs + modal de scan
