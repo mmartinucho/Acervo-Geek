@@ -1,31 +1,31 @@
-import { Ionicons } from '@expo/vector-icons';
+import { BlurView } from 'expo-blur';
 import { useRouter } from 'expo-router';
+import { Check, ChevronDown } from 'lucide-react-native';
+import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
+import { Spacing, UniverseAccents } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useTheme } from '@/hooks/use-theme';
-import { AlbumProgress } from '@/presentation/components/deck/album-progress';
+import { BrandLogo } from '@/presentation/components/brand-logo';
 import { RadarPill } from '@/presentation/components/deck/radar-pill';
 import { SwipeDeck } from '@/presentation/components/deck/swipe-deck';
-import { DeckFilter, useDeck } from '@/presentation/hooks/use-deck';
-
-const FILTERS: { key: DeckFilter; label: string }[] = [
-  { key: 'all', label: 'Tudo' },
-  { key: 'trade', label: 'Troca' },
-  { key: 'sale', label: 'Venda' },
-];
+import { PrimaryButton } from '@/presentation/components/primary-button';
+import { useDeck } from '@/presentation/hooks/use-deck';
+import { useAccent } from '@/presentation/theme/accent-context';
+import { universeIcon } from '@/presentation/theme/universe-icons';
 
 export default function DiscoverScreen() {
   const router = useRouter();
   const theme = useTheme();
+  const dark = useColorScheme() !== 'light';
+  const { accent, activeTheme, themes, setActiveTheme } = useAccent();
+  const [showSelector, setShowSelector] = useState(false);
   const {
     cards,
-    progress,
-    filter,
-    setFilter,
     radiusKm,
     setRadiusKm,
     outOfRange,
@@ -35,118 +35,104 @@ export default function DiscoverScreen() {
     refresh,
   } = useDeck();
 
+  const UniverseIcon = universeIcon(activeTheme?.slug);
+
   return (
     <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea} edges={['top']}>
-        <View style={styles.header}>
-          <ThemedText type="display">Descobrir</ThemedText>
+      {/* Deck edge-to-edge, atrás do header e da nav flutuante */}
+      <View style={styles.deckArea}>
+        {cards.length === 0 ? (
+          <View style={styles.emptyState}>
+            <BrandLogo size={80} color={theme.text} opacity={0.4} />
+            <ThemedText type="display" style={styles.emptyTitle}>
+              Radar Limpo.
+            </ThemedText>
+            <ThemedText type="small" themeColor="textSecondary" style={styles.emptyHint}>
+              {outOfRange > 0
+                ? `${outOfRange} ${outOfRange === 1 ? 'item está' : 'itens estão'} fora do seu radar de ${radiusKm} km.`
+                : 'Não há mais itens na sua região atual para este universo.'}
+            </ThemedText>
+            {outOfRange > 0 ? (
+              <PrimaryButton
+                title="Expandir Busca"
+                onPress={() => setRadiusKm(null)}
+                style={styles.emptyCta}
+              />
+            ) : (
+              <PrimaryButton title="Recomeçar" onPress={refresh} style={styles.emptyCta} />
+            )}
+          </View>
+        ) : (
+          <SwipeDeck cards={cards} onSwipe={swipe} showActions />
+        )}
+      </View>
+
+      {/* Header flutuante */}
+      <SafeAreaView edges={['top']} style={styles.header} pointerEvents="box-none">
+        <View style={styles.headerRow} pointerEvents="box-none">
+          <Pressable
+            onPress={() => setShowSelector((v) => !v)}
+            style={[styles.universePill, dark ? styles.pillDark : styles.pillLight]}>
+            <BlurView
+              intensity={40}
+              tint={dark ? 'dark' : 'light'}
+              style={StyleSheet.absoluteFill}
+            />
+            {/* Views ao redor dos svgs: sem elas o ícone pinta atrás do blur no web */}
+            <View>
+              <UniverseIcon size={16} strokeWidth={2.5} color={accent} />
+            </View>
+            <ThemedText type="label" style={styles.universeName}>
+              {activeTheme?.name ?? 'Universo'}
+            </ThemedText>
+            <View style={showSelector ? styles.chevronOpen : undefined}>
+              <ChevronDown size={14} color={theme.textSecondary} />
+            </View>
+          </Pressable>
           <RadarPill radiusKm={radiusKm} onChange={setRadiusKm} />
         </View>
 
-        {progress && <AlbumProgress progress={progress} />}
-
-        <View style={[styles.segment, { backgroundColor: theme.backgroundSelected }]}>
-          {FILTERS.map((f) => {
-            const selected = filter === f.key;
-            return (
-              <Pressable
-                key={f.key}
-                onPress={() => setFilter(f.key)}
-                style={[
-                  styles.segmentItem,
-                  selected && { backgroundColor: theme.backgroundElement },
-                  selected && styles.segmentItemSelected,
-                ]}>
-                <ThemedText
-                  type="smallBold"
-                  style={{ color: selected ? theme.text : theme.textSecondary }}>
-                  {f.label}
-                </ThemedText>
-              </Pressable>
-            );
-          })}
-        </View>
-
-        <View style={styles.deckArea}>
-          {cards.length === 0 ? (
-            <View style={styles.emptyState}>
-              <Ionicons
-                name={outOfRange > 0 ? 'locate-outline' : 'checkmark-done-outline'}
-                size={40}
-                color={theme.textSecondary}
-              />
-              {outOfRange > 0 ? (
-                <>
-                  <ThemedText type="title">Ninguém por perto</ThemedText>
-                  <ThemedText type="small" themeColor="textSecondary" style={styles.emptyHint}>
-                    {outOfRange} {outOfRange === 1 ? 'match está' : 'matches estão'} fora do seu
-                    radar de {radiusKm} km. Amplie o raio para encontrá-{outOfRange === 1 ? 'lo' : 'los'}.
+        {/* Dropdown de universos */}
+        {showSelector && (
+          <View style={[styles.dropdown, dark ? styles.dropdownDark : styles.dropdownLight]}>
+            <BlurView
+              intensity={60}
+              tint={dark ? 'dark' : 'light'}
+              style={StyleSheet.absoluteFill}
+            />
+            {themes.map((t) => {
+              const ItemIcon = universeIcon(t.slug);
+              const itemAccent = t.accent ?? UniverseAccents[t.slug] ?? accent;
+              const isActive = activeTheme?.id === t.id;
+              return (
+                <Pressable
+                  key={t.id}
+                  onPress={() => {
+                    setActiveTheme(t.id);
+                    setShowSelector(false);
+                  }}
+                  style={[
+                    styles.dropdownItem,
+                    isActive && { backgroundColor: theme.glass },
+                  ]}>
+                  <ItemIcon size={20} strokeWidth={1.5} color={itemAccent} />
+                  <ThemedText type="label" style={styles.dropdownName}>
+                    {t.name}
                   </ThemedText>
-                  <Pressable
-                    onPress={() => setRadiusKm(null)}
-                    style={[styles.restartButton, { backgroundColor: theme.tint }]}>
-                    <ThemedText type="smallBold" style={{ color: theme.onTint }}>
-                      Buscar em todo o Brasil
-                    </ThemedText>
-                  </Pressable>
-                </>
-              ) : (
-                <>
-                  <ThemedText type="title">Você viu tudo por aqui</ThemedText>
-                  <ThemedText type="small" themeColor="textSecondary" style={styles.emptyHint}>
-                    Volte mais tarde ou recomece o deck.
-                  </ThemedText>
-                  <Pressable
-                    onPress={refresh}
-                    style={[styles.restartButton, { backgroundColor: theme.text }]}>
-                    <ThemedText type="smallBold" style={{ color: theme.background }}>
-                      Recomeçar
-                    </ThemedText>
-                  </Pressable>
-                </>
-              )}
-            </View>
-          ) : (
-            <SwipeDeck cards={cards} onSwipe={swipe} />
-          )}
-        </View>
-
-        <View style={styles.actions}>
-          <Pressable
-            onPress={() => swipe('pass')}
-            disabled={cards.length === 0}
-            style={[
-              styles.actionButton,
-              styles.passButton,
-              { backgroundColor: theme.backgroundElement, borderColor: theme.border },
-            ]}
-            accessibilityLabel="Passo">
-            <Ionicons name="close" size={28} color="#F43F5E" />
-          </Pressable>
-          <Pressable
-            onPress={() => router.push('/scan')}
-            style={[
-              styles.scanButton,
-              { backgroundColor: theme.backgroundElement, borderColor: theme.border },
-            ]}
-            accessibilityLabel="Escanear item">
-            <Ionicons name="scan-outline" size={22} color={theme.tint} />
-          </Pressable>
-          <Pressable
-            onPress={() => swipe('want')}
-            disabled={cards.length === 0}
-            style={[styles.actionButton, styles.wantButton, { backgroundColor: theme.tint }]}
-            accessibilityLabel="Quero">
-            <Ionicons name="heart" size={28} color={theme.onTint} />
-          </Pressable>
-        </View>
+                  {isActive && <Check size={18} color={accent} />}
+                </Pressable>
+              );
+            })}
+          </View>
+        )}
       </SafeAreaView>
 
+      {/* Celebração de match (vira o overlay "Sinergia." na tela 4) */}
       {celebration && (
         <View style={styles.matchOverlay}>
           <ThemedView type="backgroundElement" style={styles.matchCard}>
             <ThemedText style={styles.matchEmoji}>⚽️</ThemedText>
-            <ThemedText type="display" style={[styles.matchTitle, { color: theme.tint }]}>
+            <ThemedText type="display" style={{ color: accent }}>
               Deu match!
             </ThemedText>
             <ThemedText type="small" themeColor="textSecondary" style={styles.matchText}>
@@ -154,16 +140,14 @@ export default function DiscoverScreen() {
                 ? `${celebration.matchReason}. Vocês têm as repetidas um do outro — troca na conta!`
                 : `@${celebration.owner.username} também quer figurinhas do seu álbum.`}
             </ThemedText>
-            <Pressable
+            <PrimaryButton
+              title="Propor troca"
               onPress={() => {
                 dismissCelebration();
                 router.push('/trades');
               }}
-              style={[styles.matchCta, { backgroundColor: theme.tint }]}>
-              <ThemedText type="smallBold" style={{ color: theme.onTint }}>
-                Propor troca
-              </ThemedText>
-            </Pressable>
+              style={styles.matchCta}
+            />
             <Pressable onPress={dismissCelebration} style={styles.matchDismiss}>
               <ThemedText type="smallBold" themeColor="textSecondary">
                 Continuar deslizando
@@ -180,86 +164,92 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  safeArea: {
-    flex: 1,
+  deckArea: {
+    position: 'absolute',
+    top: 108,
+    left: Spacing.three,
+    right: Spacing.three,
+    bottom: 132,
+  },
+  header: {
     paddingHorizontal: Spacing.four,
     paddingTop: Spacing.two,
     gap: Spacing.three,
   },
-  header: {
+  headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  segment: {
-    flexDirection: 'row',
-    borderRadius: 999,
-    padding: 4,
-    gap: 4,
-  },
-  segmentItem: {
-    flex: 1,
-    alignItems: 'center',
-    borderRadius: 999,
-    paddingVertical: Spacing.two,
-  },
-  segmentItemSelected: {
-    shadowColor: '#000',
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 1 },
-    elevation: 1,
-  },
-  deckArea: {
-    flex: 1,
-    marginTop: Spacing.one,
-  },
-  actions: {
+  universePill: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.four,
-    paddingBottom: Spacing.two,
-  },
-  actionButton: {
-    width: 66,
-    height: 66,
-    borderRadius: 33,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  passButton: {
+    gap: 8,
+    height: 44,
+    paddingHorizontal: 20,
+    borderRadius: 999,
     borderWidth: 1,
+    overflow: 'hidden',
   },
-  scanButton: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+  pillDark: {
+    backgroundColor: 'rgba(0,0,0,0.40)',
+    borderColor: 'rgba(255,255,255,0.10)',
+  },
+  pillLight: {
+    backgroundColor: 'rgba(255,255,255,0.60)',
+    borderColor: 'rgba(0,0,0,0.05)',
+  },
+  universeName: {
+    fontSize: 14,
+  },
+  chevronOpen: {
+    transform: [{ rotate: '180deg' }],
+  },
+  dropdown: {
+    position: 'absolute',
+    top: 64,
+    left: Spacing.four,
+    right: Spacing.four,
+    borderRadius: 24,
     borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    padding: 12,
+    overflow: 'hidden',
+    zIndex: 10,
   },
-  wantButton: {
-    shadowColor: '#6D4AFF',
-    shadowOpacity: 0.45,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 8,
+  dropdownDark: {
+    backgroundColor: 'rgba(17,17,17,0.90)',
+    borderColor: 'rgba(255,255,255,0.10)',
+  },
+  dropdownLight: {
+    backgroundColor: 'rgba(255,255,255,0.90)',
+    borderColor: 'rgba(0,0,0,0.10)',
+  },
+  dropdownItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+    padding: 16,
+    borderRadius: 16,
+  },
+  dropdownName: {
+    flex: 1,
   },
   emptyState: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: Spacing.two,
+    gap: Spacing.three,
+    paddingHorizontal: Spacing.four,
+  },
+  emptyTitle: {
+    marginTop: Spacing.two,
   },
   emptyHint: {
     textAlign: 'center',
   },
-  restartButton: {
-    marginTop: Spacing.two,
-    borderRadius: 999,
-    paddingHorizontal: Spacing.four,
-    paddingVertical: Spacing.two,
+  emptyCta: {
+    alignSelf: 'stretch',
+    marginTop: Spacing.four,
   },
   matchOverlay: {
     position: 'absolute',
@@ -267,10 +257,11 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     left: 0,
-    backgroundColor: 'rgba(10, 8, 20, 0.72)',
+    backgroundColor: 'rgba(0,0,0,0.72)',
     alignItems: 'center',
     justifyContent: 'center',
     padding: Spacing.four,
+    zIndex: 20,
   },
   matchCard: {
     alignSelf: 'stretch',
@@ -283,18 +274,11 @@ const styles = StyleSheet.create({
     fontSize: 40,
     lineHeight: 46,
   },
-  matchTitle: {
-    fontSize: 32,
-    lineHeight: 40,
-  },
   matchText: {
     textAlign: 'center',
   },
   matchCta: {
     alignSelf: 'stretch',
-    alignItems: 'center',
-    borderRadius: 999,
-    paddingVertical: Spacing.two + 2,
     marginTop: Spacing.two,
   },
   matchDismiss: {

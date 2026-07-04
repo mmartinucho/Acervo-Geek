@@ -26,10 +26,12 @@ delete from public.collections where id = '0a1b2c3d-0000-4000-8000-000000000001'
 delete from public.themes where slug in ('copa', 'pokemon', 'yugioh');
 
 -- Universos ---------------------------------------------------------------
+-- Acentos canônicos por universo — mesma tabela de mobile/src/constants/theme.ts
+-- (UniverseAccents) e do MockThemeRepository; manter os três em sincronia.
 insert into public.themes (id, slug, name, kind, accent, emoji, sort_order) values
-  ('0b000000-0000-4000-8000-000000000001', 'copa',    'Copa do Mundo', 'stickers', '#12813F', '⚽', 10),
-  ('0b000000-0000-4000-8000-000000000002', 'pokemon', 'Pokémon TCG',   'tcg',      '#F5C542', '⚡', 20),
-  ('0b000000-0000-4000-8000-000000000003', 'yugioh',  'Yu-Gi-Oh!',     'tcg',      '#7C3AED', '🃏', 30);
+  ('0b000000-0000-4000-8000-000000000001', 'copa',    'Copa do Mundo', 'stickers', '#10B981', '⚽', 10),
+  ('0b000000-0000-4000-8000-000000000002', 'pokemon', 'Pokémon TCG',   'tcg',      '#EF4444', '⚡', 20),
+  ('0b000000-0000-4000-8000-000000000003', 'yugioh',  'Yu-Gi-Oh!',     'tcg',      '#D97706', '🃏', 30);
 
 -- Universo Copa: álbum + figurinhas --------------------------------------
 insert into public.collections (id, name, publisher, year, total_slots, is_active, theme_id)

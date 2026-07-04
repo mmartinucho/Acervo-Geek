@@ -4,10 +4,6 @@ import {
   Inter_600SemiBold,
   Inter_700Bold,
 } from '@expo-google-fonts/inter';
-import {
-  SpaceGrotesk_600SemiBold,
-  SpaceGrotesk_700Bold,
-} from '@expo-google-fonts/space-grotesk';
 import { useFonts } from 'expo-font';
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -17,6 +13,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import { AuthProvider, useAuth } from '@/presentation/auth/auth-context';
+import { AccentProvider } from '@/presentation/theme/accent-context';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -45,6 +42,7 @@ function RootNavigator() {
     <Stack>
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+      <Stack.Screen name="select-universe" options={{ headerShown: false }} />
       <Stack.Screen name="onboarding" options={{ headerShown: false }} />
       <Stack.Screen name="scan" options={{ presentation: 'modal', title: 'Escanear item' }} />
     </Stack>
@@ -58,8 +56,6 @@ export default function RootLayout() {
     Inter_500Medium,
     Inter_600SemiBold,
     Inter_700Bold,
-    SpaceGrotesk_600SemiBold,
-    SpaceGrotesk_700Bold,
   });
 
   // Segura o render até as fontes carregarem (o splash cobre a espera).
@@ -69,8 +65,10 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <AuthProvider>
-          <AnimatedSplashOverlay />
-          <RootNavigator />
+          <AccentProvider>
+            <AnimatedSplashOverlay />
+            <RootNavigator />
+          </AccentProvider>
         </AuthProvider>
       </ThemeProvider>
     </GestureHandlerRootView>

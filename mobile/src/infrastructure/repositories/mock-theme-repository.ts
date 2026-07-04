@@ -2,10 +2,11 @@ import { ThemeRepository } from '@/application/ports/theme-repository';
 import { CollectibleTheme } from '@/domain/entities/theme';
 
 // Espelha os universos semeados em supabase/seed.sql.
+// Acentos canônicos em UniverseAccents (constants/theme.ts) — manter em sincronia.
 const THEMES: CollectibleTheme[] = [
-  { id: 'copa', slug: 'copa', name: 'Copa do Mundo', kind: 'stickers', accent: '#12813F', emoji: '⚽' },
-  { id: 'pokemon', slug: 'pokemon', name: 'Pokémon TCG', kind: 'tcg', accent: '#F5C542', emoji: '⚡' },
-  { id: 'yugioh', slug: 'yugioh', name: 'Yu-Gi-Oh!', kind: 'tcg', accent: '#7C3AED', emoji: '🃏' },
+  { id: 'copa', slug: 'copa', name: 'Copa do Mundo', kind: 'stickers', accent: '#10B981', emoji: '⚽' },
+  { id: 'pokemon', slug: 'pokemon', name: 'Pokémon TCG', kind: 'tcg', accent: '#EF4444', emoji: '⚡' },
+  { id: 'yugioh', slug: 'yugioh', name: 'Yu-Gi-Oh!', kind: 'tcg', accent: '#D97706', emoji: '🃏' },
 ];
 
 export class MockThemeRepository implements ThemeRepository {

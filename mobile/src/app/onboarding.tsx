@@ -1,25 +1,32 @@
-import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import { Dimensions, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { ArrowRight } from 'lucide-react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Fonts, Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
-import { AlbumSlot, SLOT_STATE_LABELS, SlotState } from '@/domain/entities/collection-sheet';
+import { Spacing } from '@/constants/theme';
+import { AlbumSlot, SlotState } from '@/domain/entities/collection-sheet';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useAuth } from '@/presentation/auth/auth-context';
+import { AlbumProgressBar } from '@/presentation/components/album-progress-bar';
+import { CollectionLegend } from '@/presentation/components/collection-legend';
+import {
+  CollectionCardChip,
+  CollectionCardState,
+} from '@/presentation/components/collection-card-chip';
+import { PrimaryButton } from '@/presentation/components/primary-button';
 import { useAlbumSheet } from '@/presentation/hooks/use-album-sheet';
 
-const COLS = 3;
-const GAP = 10;
 const H_PAD = Spacing.four;
-const CHIP_W = (Dimensions.get('window').width - H_PAD * 2 - GAP * (COLS - 1)) / COLS;
 
-const STATE_COLORS: Record<SlotState, string> = {
-  missing: 'transparent',
-  have: '#12813F',
-  duplicate: '#F5C542',
+// Mapeia o estado de dados (3 estados) para o visual do chip (Fase 2).
+// O 4º estado do chip (NEED/wishlist) fica reservado até existir wishlist real.
+const CHIP_STATE: Record<SlotState, CollectionCardState> = {
+  missing: 'none',
+  have: 'have',
+  duplicate: 'repeat',
 };
 
 // Nome curto para caber no chip (sobrenome / "Escudo"), ignorando sufixos.
@@ -32,74 +39,9 @@ function shortName(name: string): string {
   return parts[idx]!;
 }
 
-function SlotChip({ slot, onPress }: { slot: AlbumSlot; onPress: () => void }) {
-  const theme = useTheme();
-  const owned = slot.state !== 'missing';
-  const bg = owned ? STATE_COLORS[slot.state] : theme.backgroundElement;
-  const fg = slot.state === 'have' ? '#FFFFFF' : slot.state === 'duplicate' ? '#7A4E00' : theme.textSecondary;
-
-  return (
-    <Pressable
-      onPress={onPress}
-      style={[
-        styles.chip,
-        {
-          width: CHIP_W,
-          backgroundColor: bg,
-          borderColor: owned ? bg : theme.border,
-          borderStyle: owned ? 'solid' : 'dashed',
-        },
-      ]}>
-      {slot.isSpecial && (
-        <View style={styles.specialStar}>
-          <Ionicons name="star" size={11} color={slot.state === 'have' ? '#FFF' : '#F5C542'} />
-        </View>
-      )}
-
-      <ThemedText style={[styles.chipNumber, { color: fg }]}>{slot.stickerNumber}</ThemedText>
-      <ThemedText type="small" numberOfLines={1} style={[styles.chipName, { color: fg }]}>
-        {shortName(slot.name)}
-      </ThemedText>
-
-      {slot.state === 'have' && (
-        <View style={styles.stateBadge}>
-          <Ionicons name="checkmark" size={12} color="#12813F" />
-        </View>
-      )}
-      {slot.state === 'duplicate' && (
-        <View style={styles.stateBadge}>
-          <ThemedText style={styles.dupBadgeText}>×2</ThemedText>
-        </View>
-      )}
-    </Pressable>
-  );
-}
-
-function Legend({ state, colorDot }: { state: SlotState; colorDot: string }) {
-  const theme = useTheme();
-  const missing = state === 'missing';
-  return (
-    <View style={styles.legendItem}>
-      <View
-        style={[
-          styles.legendDot,
-          {
-            backgroundColor: missing ? theme.backgroundElement : colorDot,
-            borderColor: missing ? theme.border : colorDot,
-            borderStyle: missing ? 'dashed' : 'solid',
-          },
-        ]}
-      />
-      <ThemedText type="small" themeColor="textSecondary">
-        {SLOT_STATE_LABELS[state]}
-      </ThemedText>
-    </View>
-  );
-}
-
 export default function OnboardingScreen() {
-  const theme = useTheme();
   const router = useRouter();
+  const dark = useColorScheme() !== 'light';
   const { refreshOnboarding } = useAuth();
   const { sheet, isLoading, cycleSlot, counts } = useAlbumSheet();
 
@@ -115,24 +57,27 @@ export default function OnboardingScreen() {
     g.slots.push(slot);
   });
 
+  const total = sheet?.slots.length ?? 0;
+  const acquired = counts.have + counts.duplicate;
+
   const finish = async () => {
     await refreshOnboarding();
     router.replace('/');
   };
 
+  const fadeColor = dark ? '#0a0a0a' : '#FAFAFA';
+
   return (
     <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
+      <SafeAreaView style={styles.safeArea} edges={['top']}>
         <View style={styles.header}>
-          <ThemedText type="display">Monte seu álbum</ThemedText>
-          <ThemedText type="small" themeColor="textSecondary">
-            Toque em cada figurinha para marcar. É isso que alimenta seus matches.
-          </ThemedText>
-          <View style={styles.legend}>
-            <Legend state="missing" colorDot="transparent" />
-            <Legend state="have" colorDot="#12813F" />
-            <Legend state="duplicate" colorDot="#F5C542" />
-          </View>
+          <ThemedText type="display">Fichário.</ThemedText>
+          <AlbumProgressBar
+            label={sheet?.collectionName ?? 'Álbum'}
+            current={acquired}
+            total={total}
+          />
+          <CollectionLegend />
         </View>
 
         {isLoading || !sheet ? (
@@ -145,30 +90,43 @@ export default function OnboardingScreen() {
           <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
             {groups.map((group) => (
               <View key={group.country} style={styles.group}>
-                <ThemedText type="smallBold" style={styles.groupTitle}>
+                <ThemedText type="overline" themeColor="textSecondary">
                   {group.country}
                 </ThemedText>
                 <View style={styles.grid}>
                   {group.slots.map((slot) => (
-                    <SlotChip key={slot.itemId} slot={slot} onPress={() => cycleSlot(slot.itemId)} />
+                    <CollectionCardChip
+                      key={slot.itemId}
+                      number={slot.stickerNumber}
+                      name={shortName(slot.name)}
+                      state={CHIP_STATE[slot.state]}
+                      rare={slot.isSpecial}
+                      onPress={() => cycleSlot(slot.itemId)}
+                      style={styles.chip}
+                    />
                   ))}
                 </View>
               </View>
             ))}
           </ScrollView>
         )}
-
-        <View style={styles.footer}>
-          <ThemedText type="small" themeColor="textSecondary" style={styles.summary}>
-            {counts.have} tenho · {counts.duplicate} repetidas · {counts.missing} faltando
-          </ThemedText>
-          <Pressable onPress={finish} style={[styles.cta, { backgroundColor: theme.tint }]}>
-            <ThemedText type="smallBold" style={{ color: theme.onTint }}>
-              Concluir
-            </ThemedText>
-          </Pressable>
-        </View>
       </SafeAreaView>
+
+      {/* Rodapé com fade + CTA "Ir para o Radar" */}
+      <View style={styles.footer} pointerEvents="box-none">
+        <LinearGradient
+          colors={['transparent', fadeColor]}
+          style={styles.footerFade}
+          pointerEvents="none"
+        />
+        <SafeAreaView edges={['bottom']} style={styles.footerInner}>
+          <PrimaryButton
+            title="Ir para o Radar"
+            onPress={finish}
+            icon={<ArrowRight size={18} color={dark ? '#0a0a0a' : '#FFFFFF'} />}
+          />
+        </SafeAreaView>
+      </View>
     </ThemedView>
   );
 }
@@ -176,46 +134,28 @@ export default function OnboardingScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   safeArea: { flex: 1, paddingHorizontal: H_PAD, paddingTop: Spacing.two },
-  header: { gap: Spacing.one },
-  legend: { flexDirection: 'row', gap: Spacing.four, marginTop: Spacing.two },
-  legendItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  legendDot: { width: 14, height: 14, borderRadius: 5, borderWidth: 1 },
+  header: { gap: Spacing.four },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  scroll: { paddingTop: Spacing.three, paddingBottom: Spacing.three, gap: Spacing.four },
+  scroll: { paddingTop: Spacing.four, paddingBottom: 140, gap: Spacing.four },
   group: { gap: Spacing.two },
-  groupTitle: { fontSize: 15 },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: GAP },
-  chip: {
-    aspectRatio: 0.82,
-    borderRadius: 14,
-    borderWidth: 1.5,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 2,
-    paddingHorizontal: 4,
-  },
-  specialStar: { position: 'absolute', top: 6, right: 7 },
-  chipNumber: { fontFamily: Fonts.display, fontSize: 22, letterSpacing: -0.5 },
-  chipName: { fontSize: 11, maxWidth: '100%' },
-  stateBadge: {
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  chip: { width: '31.5%' },
+  footer: {
     position: 'absolute',
-    top: 6,
-    left: 7,
-    minWidth: 18,
-    height: 18,
-    borderRadius: 9,
-    paddingHorizontal: 3,
-    backgroundColor: 'rgba(255,255,255,0.9)',
-    alignItems: 'center',
-    justifyContent: 'center',
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
-  dupBadgeText: { fontFamily: Fonts.bold, fontSize: 11, color: '#7A4E00' },
-  footer: { gap: Spacing.two, paddingVertical: Spacing.three },
-  summary: { textAlign: 'center' },
-  cta: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 999,
-    paddingVertical: Spacing.three,
+  footerFade: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: 160,
+  },
+  footerInner: {
+    paddingHorizontal: H_PAD,
+    paddingTop: Spacing.four,
+    paddingBottom: Spacing.four,
   },
 });

@@ -29,8 +29,21 @@ const RAW: Omit<AlbumSlot, 'state'>[] = [
   { itemId: '72', stickerNumber: '72', name: 'Rodri', country: 'Espanha', isSpecial: false },
 ];
 
+// Estados iniciais do demo — dá vida ao álbum (tenho/repetida) sem exigir
+// que o usuário marque tudo à mão. Só dado de demonstração.
+const SEED_STATES: Record<string, SlotState> = {
+  BRA: 'have',
+  '7': 'have',
+  '10': 'duplicate',
+  '21': 'have',
+  ARG: 'have',
+  '30': 'duplicate',
+  FRA: 'have',
+  '50': 'have',
+};
+
 export class MockCollectionRepository implements CollectionRepository {
-  private states = new Map<string, SlotState>();
+  private states = new Map<string, SlotState>(Object.entries(SEED_STATES));
 
   async getActiveAlbumSheet(): Promise<AlbumSheet> {
     return {

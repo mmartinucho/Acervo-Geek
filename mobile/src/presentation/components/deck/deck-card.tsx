@@ -1,19 +1,16 @@
-import { Ionicons } from '@expo/vector-icons';
+import { BlurView } from 'expo-blur';
+import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
+import { MapPin, Repeat, Sparkles, Star } from 'lucide-react-native';
+// Star: usado no meta do dono. Repeat/Sparkles/MapPin: badge, match, distância.
 import { StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { CategoryGradients, Fonts, SpecialStickerGradient } from '@/constants/theme';
-import { CONDITION_LABELS, ItemCondition } from '@/domain/entities/item';
+import { CONDITION_LABELS } from '@/domain/entities/item';
 import { DeckListing, formatDistance, formatPriceBRL } from '@/domain/entities/listing';
-
-const CONDITION_DOT: Record<ItemCondition, string> = {
-  mint: '#4ADE80',
-  near_mint: '#A3E635',
-  good: '#FACC15',
-  played: '#FB923C',
-  damaged: '#F87171',
-};
+import { AvatarInitials } from '@/presentation/components/avatar-initials';
+import { useAccent } from '@/presentation/theme/accent-context';
 
 function monogram(franchise: string): string {
   return franchise
@@ -23,117 +20,124 @@ function monogram(franchise: string): string {
     .join('');
 }
 
+// Card do deck no layout do protótipo: fundo full-bleed (gradiente da categoria
+// no lugar da foto), scrim preto embaixo, badge de modo em vidro no topo,
+// "match hint" na cor de acento, título grande e card de vidro do dono.
 export function DeckCard({ listing }: { listing: DeckListing }) {
   const { owner, item } = listing;
+  const { accent, accentSoft } = useAccent();
   const isSticker = item.category === 'sticker';
+  // Badge único: prioriza Troca; senão mostra o preço da venda.
+  const isTrade = listing.modes.includes('trade');
   const [c1, c2] = item.isSpecial ? SpecialStickerGradient : CategoryGradients[item.category];
   const matchPct = listing.matchScore != null ? Math.round(listing.matchScore * 100) : null;
+  const matchHint =
+    listing.matchReason ?? (matchPct != null ? `${matchPct}% de match` : null);
   // Figurinha mostra o número da camisa como herói; senão, monograma da franquia.
   const hero = isSticker ? `#${item.stickerNumber ?? '?'}` : monogram(item.franchise);
+  const subtitle = isSticker
+    ? `${item.country ?? item.franchise} • ${CONDITION_LABELS[item.condition]}`
+    : `${item.franchise} • ${CONDITION_LABELS[item.condition]}`;
 
   return (
     <View style={styles.card}>
-      <LinearGradient
-        colors={[c1, c2]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={StyleSheet.absoluteFill}
-      />
-      <LinearGradient
-        colors={['rgba(255,255,255,0.35)', 'transparent']}
-        start={{ x: 1, y: 0 }}
-        end={{ x: 0.2, y: 0.7 }}
-        style={StyleSheet.absoluteFill}
-      />
-      <LinearGradient
-        colors={[c1, 'transparent']}
-        start={{ x: 0.3, y: 0.2 }}
-        end={{ x: 0.9, y: 0.9 }}
-        style={styles.blob}
-      />
+      {/* Fundo full-bleed: foto do item; sem foto, base escura com um brilho
+          sutil da cor da categoria (como os blobs desfocados do protótipo). */}
+      {item.imageUrl ? (
+        <>
+          <Image
+            source={{ uri: item.imageUrl }}
+            style={StyleSheet.absoluteFill}
+            contentFit="cover"
+            transition={200}
+          />
+          <View style={styles.imageTint} />
+        </>
+      ) : (
+        <>
+          <View style={[styles.glowBlob, { backgroundColor: c1 }]} />
+          <View style={[styles.glowBlobSmall, { backgroundColor: c2 }]} />
+          <BlurView intensity={90} tint="dark" style={StyleSheet.absoluteFill} />
+          <ThemedText style={styles.hero}>{hero}</ThemedText>
+        </>
+      )}
 
-      <ThemedText style={styles.hero}>{hero}</ThemedText>
-
-      <View style={styles.topRow}>
-        {item.isSpecial && (
-          <View style={styles.specialChip}>
-            <Ionicons name="star" size={12} color="#7A4E00" />
-            <ThemedText type="smallBold" style={styles.specialChipText}>
-              ESPECIAL
-            </ThemedText>
-          </View>
-        )}
-        <View style={styles.spacer} />
-        {listing.modes.includes('trade') && (
-          <View style={styles.glassChip}>
-            <Ionicons name="swap-horizontal" size={13} color="#FFF" />
-            <ThemedText type="smallBold" style={styles.glassChipText}>
-              Troca
-            </ThemedText>
-          </View>
-        )}
-        {listing.modes.includes('sale') && listing.priceBRL != null && (
-          <View style={styles.glassChip}>
-            <ThemedText type="smallBold" style={styles.glassChipText}>
-              {formatPriceBRL(listing.priceBRL)}
-            </ThemedText>
-          </View>
-        )}
-      </View>
-
+      {/* Scrim: transparente → preto/90 na base */}
       <LinearGradient
-        colors={['transparent', 'rgba(6,4,16,0.2)', 'rgba(6,4,16,0.9)']}
-        locations={[0, 0.5, 1]}
+        colors={['transparent', 'rgba(0,0,0,0.20)', 'rgba(0,0,0,0.90)']}
+        locations={[0, 0.45, 1]}
         style={styles.scrim}
       />
 
+      {/* Badge único do topo (vidro): Troca ou preço, como no protótipo */}
+      <View style={styles.topRow}>
+        <View style={styles.glassBadge}>
+          <BlurView intensity={40} tint="dark" style={StyleSheet.absoluteFill} />
+          {isTrade ? (
+            <>
+              {/* View ao redor do svg: sem ela o ícone pinta atrás do blur no web */}
+              <View>
+                <Repeat size={12} color="#FFFFFF" strokeWidth={2.5} />
+              </View>
+              <ThemedText type="overline" style={styles.glassBadgeText}>
+                Troca
+              </ThemedText>
+            </>
+          ) : (
+            <ThemedText type="overline" style={styles.glassBadgeText}>
+              {listing.priceBRL != null ? formatPriceBRL(listing.priceBRL) : 'Venda'}
+            </ThemedText>
+          )}
+        </View>
+      </View>
+
+      {/* Conteúdo inferior */}
       <View style={styles.info}>
-        {listing.matchReason ? (
-          <View style={styles.matchPill}>
-            <Ionicons name="repeat" size={13} color="#FFF" />
-            <ThemedText type="smallBold" style={styles.matchPillText} numberOfLines={1}>
-              {listing.matchReason}
+        {matchHint && (
+          <View
+            style={[styles.matchPill, { backgroundColor: accent, shadowColor: accentSoft }]}>
+            <Sparkles size={12} color="#FFFFFF" />
+            <ThemedText type="overline" style={styles.matchPillText} numberOfLines={1}>
+              {matchHint}
             </ThemedText>
           </View>
-        ) : (
-          matchPct != null && (
-            <View style={styles.matchPill}>
-              <Ionicons name="sparkles" size={12} color="#FFF" />
-              <ThemedText type="smallBold" style={styles.matchPillText}>
-                {matchPct}% match
-              </ThemedText>
-            </View>
-          )
         )}
+
         <ThemedText style={styles.itemName} numberOfLines={2}>
           {item.name}
         </ThemedText>
-        <View style={styles.metaRow}>
-          <View style={[styles.condDot, { backgroundColor: CONDITION_DOT[item.condition] }]} />
-          <ThemedText style={styles.itemMeta}>
-            {isSticker && item.country
-              ? item.country
-              : `${item.franchise} · ${CONDITION_LABELS[item.condition]}`}
-          </ThemedText>
-        </View>
-        <View style={styles.ownerRow}>
-          <ThemedText style={styles.ownerText} numberOfLines={1}>
-            @{owner.username}
-          </ThemedText>
-          <Ionicons name="checkmark-circle" size={14} color="#60A5FA" />
-          <ThemedText style={styles.ownerRep}>★ {owner.reputation.toFixed(1)}</ThemedText>
-          {owner.distanceKm != null && (
-            <>
-              <Ionicons name="location" size={13} color="rgba(255,255,255,0.8)" />
-              <ThemedText style={styles.ownerCity}>
-                {owner.city ? `${owner.city} · ` : ''}
-                {formatDistance(owner.distanceKm)}
-              </ThemedText>
-            </>
-          )}
-          {owner.distanceKm == null && owner.city && (
-            <ThemedText style={styles.ownerCity}>· {owner.city}</ThemedText>
-          )}
+        <ThemedText style={styles.itemMeta}>{subtitle}</ThemedText>
+
+        {/* Card de vidro do dono */}
+        <View style={styles.ownerCard}>
+          <BlurView intensity={40} tint="dark" style={StyleSheet.absoluteFill} />
+          <AvatarInitials username={owner.username} size={48} />
+          <View style={styles.ownerInfo}>
+            <ThemedText style={styles.ownerName} numberOfLines={1}>
+              @{owner.username}
+            </ThemedText>
+            <View style={styles.ownerMetaRow}>
+              <Star size={10} color="rgba(255,255,255,0.6)" fill="rgba(255,255,255,0.6)" />
+              <ThemedText style={styles.ownerMeta}>{owner.reputation.toFixed(1)}</ThemedText>
+              {owner.distanceKm != null && (
+                <>
+                  <ThemedText style={styles.ownerMeta}>•</ThemedText>
+                  <MapPin size={10} color="rgba(255,255,255,0.6)" />
+                  <ThemedText style={styles.ownerMeta} numberOfLines={1}>
+                    {formatDistance(owner.distanceKm)}
+                  </ThemedText>
+                </>
+              )}
+              {owner.distanceKm == null && owner.city && (
+                <>
+                  <ThemedText style={styles.ownerMeta}>•</ThemedText>
+                  <ThemedText style={styles.ownerMeta} numberOfLines={1}>
+                    {owner.city}
+                  </ThemedText>
+                </>
+              )}
+            </View>
+          </View>
         </View>
       </View>
     </View>
@@ -143,144 +147,151 @@ export function DeckCard({ listing }: { listing: DeckListing }) {
 const styles = StyleSheet.create({
   card: {
     flex: 1,
-    borderRadius: 32,
+    borderRadius: 40,
     overflow: 'hidden',
-    backgroundColor: '#1a1030',
+    backgroundColor: '#111111',
   },
-  blob: {
+  imageTint: {
     position: 'absolute',
-    width: 300,
-    height: 300,
-    borderRadius: 150,
-    top: -80,
-    left: -60,
-    opacity: 0.55,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.10)',
+  },
+  glowBlob: {
+    position: 'absolute',
+    width: 320,
+    height: 320,
+    borderRadius: 160,
+    top: -100,
+    left: -80,
+    opacity: 0.30,
+  },
+  glowBlobSmall: {
+    position: 'absolute',
+    width: 260,
+    height: 260,
+    borderRadius: 130,
+    bottom: '30%',
+    right: -100,
+    opacity: 0.20,
   },
   hero: {
     position: 'absolute',
-    top: '24%',
+    top: '22%',
     alignSelf: 'center',
     fontFamily: Fonts.display,
-    fontSize: 120,
-    lineHeight: 132,
-    letterSpacing: 2,
-    color: 'rgba(255,255,255,0.22)',
-  },
-  topRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    paddingHorizontal: 18,
-    paddingTop: 18,
-  },
-  spacer: {
-    flex: 1,
-  },
-  specialChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: '#FFD65A',
-    borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-  },
-  specialChipText: {
-    fontFamily: Fonts.bold,
-    color: '#7A4E00',
-    fontSize: 11,
-    letterSpacing: 1,
-  },
-  glassChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: 'rgba(255,255,255,0.24)',
-    borderRadius: 999,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-  },
-  glassChipText: {
-    fontFamily: Fonts.semibold,
-    color: '#FFFFFF',
-    fontSize: 13,
+    fontSize: 88,
+    lineHeight: 96,
+    letterSpacing: -2.5,
+    color: 'rgba(255,255,255,0.10)',
   },
   scrim: {
     position: 'absolute',
     left: 0,
     right: 0,
     bottom: 0,
-    height: '58%',
+    height: '65%',
+  },
+  topRow: {
+    flexDirection: 'row',
+    gap: 8,
+    paddingHorizontal: 24,
+    paddingTop: 24,
+  },
+  glassBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.20)',
+    backgroundColor: 'rgba(255,255,255,0.10)',
+    overflow: 'hidden',
+  },
+  glassBadgeText: {
+    fontSize: 10,
+    letterSpacing: 1.5,
+    color: '#FFFFFF',
   },
   info: {
     position: 'absolute',
     left: 0,
     right: 0,
     bottom: 0,
-    padding: 22,
-    gap: 5,
+    padding: 24,
+    gap: 8,
   },
   matchPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
+    gap: 6,
     alignSelf: 'flex-start',
     maxWidth: '100%',
-    backgroundColor: 'rgba(18,129,63,0.92)',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
     borderRadius: 999,
-    paddingHorizontal: 11,
-    paddingVertical: 5,
-    marginBottom: 4,
+    marginBottom: 8,
+    shadowOpacity: 1,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 6,
   },
   matchPillText: {
-    fontFamily: Fonts.semibold,
+    fontSize: 10,
+    letterSpacing: 1.5,
     color: '#FFFFFF',
-    fontSize: 12,
     flexShrink: 1,
   },
   itemName: {
     fontFamily: Fonts.display,
     color: '#FFFFFF',
-    fontSize: 28,
-    lineHeight: 32,
-    letterSpacing: -0.6,
-  },
-  metaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 7,
-  },
-  condDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    fontSize: 36, // text-4xl
+    lineHeight: 36, // leading-none
+    letterSpacing: -1.8, // tracking-tighter
   },
   itemMeta: {
     fontFamily: Fonts.medium,
-    color: 'rgba(255,255,255,0.85)',
-    fontSize: 15,
+    color: 'rgba(255,255,255,0.70)',
+    fontSize: 14,
+    lineHeight: 20,
+    letterSpacing: -0.2,
+    marginBottom: 16,
   },
-  ownerRow: {
+  ownerCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+    padding: 16,
+    borderRadius: 28,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.20)',
+    backgroundColor: 'rgba(255,255,255,0.10)',
+    overflow: 'hidden',
+  },
+  ownerInfo: {
+    flex: 1,
+    gap: 4,
+  },
+  ownerName: {
+    fontFamily: Fonts.medium,
+    color: '#FFFFFF',
+    fontSize: 16,
+    letterSpacing: -0.3,
+  },
+  ownerMetaRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
-    marginTop: 6,
   },
-  ownerText: {
+  ownerMeta: {
     fontFamily: Fonts.semibold,
-    color: '#FFFFFF',
-    fontSize: 13,
-  },
-  ownerRep: {
-    fontFamily: Fonts.semibold,
-    color: 'rgba(255,255,255,0.9)',
-    fontSize: 13,
-    marginLeft: 2,
-  },
-  ownerCity: {
-    fontFamily: Fonts.medium,
-    color: 'rgba(255,255,255,0.72)',
-    fontSize: 13,
-    flexShrink: 1,
+    color: 'rgba(255,255,255,0.60)',
+    fontSize: 10,
+    letterSpacing: 1.5,
+    textTransform: 'uppercase',
   },
 });
