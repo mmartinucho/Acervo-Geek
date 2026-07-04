@@ -1,6 +1,6 @@
 import { SupabaseClient } from '@supabase/supabase-js';
 
-import { ScanRepository } from '@/application/ports/scan-repository';
+import { RecognizedItem, ScanRepository } from '@/application/ports/scan-repository';
 
 interface PresignResponse {
   uploadUrl: string;
@@ -29,5 +29,14 @@ export class SupabaseScanRepository implements ScanRepository {
     if (!put.ok) throw new Error(`Falha no upload da foto (HTTP ${put.status})`);
 
     return { key };
+  }
+
+  async recognizeItem(key: string): Promise<RecognizedItem | null> {
+    const { data, error } = await this.client.functions.invoke('scan-item', {
+      body: { key },
+    });
+    if (error) throw error;
+    const extracted = (data as { extracted?: RecognizedItem })?.extracted;
+    return extracted ?? null;
   }
 }

@@ -24,7 +24,7 @@ export default function ScanScreen() {
   const [permission, requestPermission] = useCameraPermissions();
   const cameraRef = useRef<CameraView>(null);
   const [frameH, setFrameH] = useState(0);
-  const { state, error, upload, reset } = useScan();
+  const { state, recognized, error, scan, reset } = useScan();
 
   const progress = useSharedValue(0);
   useEffect(() => {
@@ -34,10 +34,8 @@ export default function ScanScreen() {
     transform: [{ translateY: progress.value * Math.max(0, frameH - 2) }],
   }));
 
-  const handleRegister = async () => {
-    if (state === 'uploading') return;
-    if (state === 'error') return reset();
-
+  // Captura a foto, sobe pro S3 e reconhece por IA.
+  const handleScan = async () => {
     let uri: string | null = null;
     try {
       const photo = await cameraRef.current?.takePictureAsync({ quality: 0.7 });
@@ -45,10 +43,11 @@ export default function ScanScreen() {
     } catch {
       // Câmera indisponível (ex.: web sem permissão) — segue com placeholder.
     }
-    // Sem foto real, demonstra o upload com uma imagem placeholder.
-    const res = await upload(uri ?? 'https://picsum.photos/seed/scancapture/800/1200', 'jpg');
-    if (res) setTimeout(() => router.back(), 800);
+    await scan(uri ?? 'https://picsum.photos/seed/scancapture/800/1200', 'jpg');
   };
+
+  // "Registrar Item" (após reconhecer) — o INSERT no inventário entra depois.
+  const handleRegister = () => router.back();
 
   // Enquanto a permissão carrega.
   if (!permission) return <View style={styles.container} />;
@@ -78,8 +77,12 @@ export default function ScanScreen() {
     );
   }
 
-  const busy = state === 'uploading';
+  const busy = state === 'uploading' || state === 'recognizing';
   const done = state === 'done';
+  const busyLabel = state === 'recognizing' ? 'Reconhecendo…' : 'Enviando…';
+  const codeParts = recognized
+    ? [recognized.cardNumber, recognized.rarity].filter(Boolean)
+    : [];
 
   return (
     <View style={styles.container}>
@@ -106,29 +109,52 @@ export default function ScanScreen() {
         </View>
       </SafeAreaView>
 
-      {/* Card do item detectado */}
+      {/* Card do item */}
       <SafeAreaView edges={['bottom']} style={styles.footer}>
         <View style={styles.detectCard}>
-          <ThemedText style={styles.detectName}>Blue-Eyes White Dragon</ThemedText>
-          <ThemedText style={styles.detectCode}>LOB-001 • Rare</ThemedText>
+          <ThemedText style={styles.detectName}>
+            {done && recognized
+              ? recognized.name
+              : done
+                ? 'Item não reconhecido'
+                : 'Aponte para o item'}
+          </ThemedText>
+          <ThemedText style={styles.detectCode}>
+            {done && recognized
+              ? [recognized.franchise, ...codeParts].join(' • ')
+              : 'Scanner com IA'}
+          </ThemedText>
           {error && <ThemedText style={styles.errorText}>{error}</ThemedText>}
-          <Pressable
-            onPress={handleRegister}
-            disabled={busy || done}
-            style={[styles.registerBtn, (busy || done) && styles.registerBtnBusy]}>
-            {busy ? (
-              <ActivityIndicator color="#000000" />
-            ) : done ? (
-              <View style={styles.registerDone}>
-                <Check size={18} strokeWidth={3} color="#000000" />
-                <ThemedText style={styles.registerText}>Registrado!</ThemedText>
-              </View>
-            ) : (
-              <ThemedText style={styles.registerText}>
-                {state === 'error' ? 'Tentar de novo' : 'Registrar Item'}
-              </ThemedText>
-            )}
-          </Pressable>
+
+          {done ? (
+            <View style={styles.doneRow}>
+              <Pressable onPress={reset} style={styles.secondaryBtn}>
+                <ThemedText style={styles.secondaryText}>De novo</ThemedText>
+              </Pressable>
+              <Pressable onPress={handleRegister} style={[styles.registerBtn, styles.registerFlex]}>
+                <View style={styles.registerDone}>
+                  <Check size={18} strokeWidth={3} color="#000000" />
+                  <ThemedText style={styles.registerText}>Registrar Item</ThemedText>
+                </View>
+              </Pressable>
+            </View>
+          ) : (
+            <Pressable
+              onPress={state === 'error' ? reset : handleScan}
+              disabled={busy}
+              style={[styles.registerBtn, busy && styles.registerBtnBusy]}>
+              {busy ? (
+                <View style={styles.registerDone}>
+                  <ActivityIndicator color="#000000" />
+                  <ThemedText style={styles.registerText}>{busyLabel}</ThemedText>
+                </View>
+              ) : (
+                <ThemedText style={styles.registerText}>
+                  {state === 'error' ? 'Tentar de novo' : 'Escanear'}
+                </ThemedText>
+              )}
+            </Pressable>
+          )}
         </View>
       </SafeAreaView>
     </View>
@@ -260,6 +286,27 @@ const styles = StyleSheet.create({
   },
   registerBtnBusy: {
     opacity: 0.85,
+  },
+  registerFlex: {
+    flex: 1,
+  },
+  doneRow: {
+    flexDirection: 'row',
+    alignSelf: 'stretch',
+    gap: Spacing.two,
+  },
+  secondaryBtn: {
+    borderRadius: 999,
+    paddingHorizontal: Spacing.four,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.20)',
+  },
+  secondaryText: {
+    fontFamily: Fonts.medium,
+    color: '#FFFFFF',
+    fontSize: 14,
   },
   registerDone: {
     flexDirection: 'row',

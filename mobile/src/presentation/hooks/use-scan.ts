@@ -1,25 +1,29 @@
 import { useCallback, useState } from 'react';
 
+import { RecognizedItem } from '@/application/ports/scan-repository';
 import { repositories } from '@/infrastructure/container';
 
-export type ScanState = 'idle' | 'uploading' | 'done' | 'error';
+// idle → capturando/enviando → reconhecendo → pronto (item identificado) → erro.
+export type ScanState = 'idle' | 'uploading' | 'recognizing' | 'done' | 'error';
 
-// Estado do fluxo de registro: captura → upload (presigned S3) → concluído.
+// Fluxo do scanner: captura → upload (presigned S3) → reconhecimento por IA.
 export function useScan() {
   const [state, setState] = useState<ScanState>('idle');
-  const [key, setKey] = useState<string | null>(null);
+  const [recognized, setRecognized] = useState<RecognizedItem | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const upload = useCallback(async (fileUri: string, ext = 'jpg') => {
-    setState('uploading');
+  const scan = useCallback(async (fileUri: string, ext = 'jpg') => {
     setError(null);
+    setState('uploading');
     try {
-      const res = await repositories.scan.uploadItemPhoto(fileUri, ext);
-      setKey(res.key);
+      const { key } = await repositories.scan.uploadItemPhoto(fileUri, ext);
+      setState('recognizing');
+      const item = await repositories.scan.recognizeItem(key);
+      setRecognized(item);
       setState('done');
-      return res;
+      return item;
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Falha ao registrar o item.');
+      setError(e instanceof Error ? e.message : 'Falha ao escanear o item.');
       setState('error');
       return null;
     }
@@ -27,9 +31,9 @@ export function useScan() {
 
   const reset = useCallback(() => {
     setState('idle');
-    setKey(null);
+    setRecognized(null);
     setError(null);
   }, []);
 
-  return { state, key, error, upload, reset };
+  return { state, recognized, error, scan, reset };
 }
