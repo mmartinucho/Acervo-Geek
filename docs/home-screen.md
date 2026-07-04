@@ -5,6 +5,23 @@ Deslizar para a **direita = quero** (interesse em trocar ou comprar), para a
 **esquerda = passo**. Cada swipe é preferência revelada — o sinal de treino
 mais valioso do matchmaking (tabela `swipes`, migration 0002).
 
+## Tema do MVP — figurinhas da Copa
+
+No vertical de arranque (ver `mvp-copa-stickers.md`), a Home vem tematizada:
+
+- **Barra de progresso do álbum** no topo (`AlbumProgress`): nome do álbum, %
+  de conclusão, "faltam N figurinhas" e "N repetidas p/ trocar" — dados da view
+  `user_collection_progress`. É o gancho de motivação do colecionador.
+- **Cards de figurinha**: número da camisa como herói (`#10`), país, selo
+  dourado **ESPECIAL** para legends/holográficas, badges de troca/venda.
+- **Gancho do match recíproco** (`matchReason`): pílula verde "@fulano quer a
+  sua repetida do Neymar" — o resultado de `find_sticker_matches`. Ao deslizar
+  para a direita, o overlay "Deu match!" fecha o loop ("vocês têm as repetidas
+  um do outro").
+
+O card é agnóstico de categoria: sem figurinha, cai no visual aurora + monograma
+da franquia (cards/figures). Só a camada de dados muda por vertical.
+
 ## Wireframe
 
 ```

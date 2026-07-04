@@ -7,6 +7,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { AlbumProgress } from '@/presentation/components/deck/album-progress';
 import { SwipeDeck } from '@/presentation/components/deck/swipe-deck';
 import { DeckFilter, useDeck } from '@/presentation/hooks/use-deck';
 
@@ -19,7 +20,7 @@ const FILTERS: { key: DeckFilter; label: string }[] = [
 export default function DiscoverScreen() {
   const router = useRouter();
   const theme = useTheme();
-  const { cards, filter, setFilter, swipe, celebration, dismissCelebration, refresh } =
+  const { cards, progress, filter, setFilter, swipe, celebration, dismissCelebration, refresh } =
     useDeck();
 
   return (
@@ -37,6 +38,8 @@ export default function DiscoverScreen() {
             <View style={[styles.notifDot, { backgroundColor: theme.tint }]} />
           </Pressable>
         </View>
+
+        {progress && <AlbumProgress progress={progress} />}
 
         <View style={[styles.segment, { backgroundColor: theme.backgroundSelected }]}>
           {FILTERS.map((f) => {
@@ -114,11 +117,14 @@ export default function DiscoverScreen() {
       {celebration && (
         <View style={styles.matchOverlay}>
           <ThemedView type="backgroundElement" style={styles.matchCard}>
+            <ThemedText style={styles.matchEmoji}>⚽️</ThemedText>
             <ThemedText style={[styles.matchTitle, { color: theme.tint }]}>
               Deu match!
             </ThemedText>
             <ThemedText type="small" themeColor="textSecondary" style={styles.matchText}>
-              @{celebration.owner.username} também quer itens do seu acervo.
+              {celebration.matchReason
+                ? `${celebration.matchReason}. Vocês têm as repetidas um do outro — troca na conta!`
+                : `@${celebration.owner.username} também quer figurinhas do seu álbum.`}
             </ThemedText>
             <Pressable
               onPress={() => {
@@ -270,6 +276,10 @@ const styles = StyleSheet.create({
     padding: Spacing.five,
     alignItems: 'center',
     gap: Spacing.two,
+  },
+  matchEmoji: {
+    fontSize: 40,
+    lineHeight: 46,
   },
   matchTitle: {
     fontSize: 32,

@@ -36,7 +36,13 @@ export const CategoryGradients = {
   figure: ['#FF8A4C', '#E0463B'],
   comic: ['#3B82F6', '#1D4ED8'],
   game: ['#22C55E', '#0E9F6E'],
+  sticker: ['#16A34A', '#065F46'],
 } as const;
+
+// Figurinha especial (legend/holográfica) ganha um gradiente dourado.
+export const SpecialStickerGradient = ['#F5C542', '#D97706'] as const;
+
+export const PitchGreen = '#12813F';
 
 export const BrandGradient = ['#8B6DFF', '#6D4AFF'] as const;
 

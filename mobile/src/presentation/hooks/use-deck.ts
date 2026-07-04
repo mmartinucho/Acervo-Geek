@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
+import { CollectionProgress } from '@/domain/entities/collection-progress';
 import { DeckListing, ListingMode, SwipeDirection } from '@/domain/entities/listing';
 import { repositories } from '@/infrastructure/container';
 
@@ -9,12 +10,18 @@ const MATCH_THRESHOLD = 0.85;
 
 export function useDeck() {
   const [all, setAll] = useState<DeckListing[]>([]);
+  const [progress, setProgress] = useState<CollectionProgress | null>(null);
   const [swipedIds, setSwipedIds] = useState<ReadonlySet<string>>(new Set());
   const [filter, setFilter] = useState<DeckFilter>('all');
   const [celebration, setCelebration] = useState<DeckListing | null>(null);
 
   const refresh = useCallback(async () => {
-    setAll(await repositories.deck.listDeck());
+    const [deck, prog] = await Promise.all([
+      repositories.deck.listDeck(),
+      repositories.deck.getProgress(),
+    ]);
+    setAll(deck);
+    setProgress(prog);
     setSwipedIds(new Set());
   }, []);
 
@@ -49,5 +56,5 @@ export function useDeck() {
 
   const dismissCelebration = useCallback(() => setCelebration(null), []);
 
-  return { cards, filter, setFilter, swipe, celebration, dismissCelebration, refresh };
+  return { cards, progress, filter, setFilter, swipe, celebration, dismissCelebration, refresh };
 }
