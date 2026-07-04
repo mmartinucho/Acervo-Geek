@@ -40,18 +40,7 @@ export default function DiscoverScreen() {
       <SafeAreaView style={styles.safeArea} edges={['top']}>
         <View style={styles.header}>
           <ThemedText style={styles.title}>Descobrir</ThemedText>
-          <View style={styles.headerActions}>
-            <RadarPill radiusKm={radiusKm} onChange={setRadiusKm} />
-            <Pressable
-              style={[
-                styles.iconButton,
-                { backgroundColor: theme.backgroundElement, borderColor: theme.border },
-              ]}
-              accessibilityLabel="Notificações">
-              <Ionicons name="notifications-outline" size={20} color={theme.text} />
-              <View style={[styles.notifDot, { backgroundColor: theme.tint }]} />
-            </Pressable>
-          </View>
+          <RadarPill radiusKm={radiusKm} onChange={setRadiusKm} />
         </View>
 
         {progress && <AlbumProgress progress={progress} />}
@@ -202,32 +191,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  headerActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.two,
-  },
   title: {
     fontSize: 32,
     lineHeight: 38,
     fontWeight: '800',
     letterSpacing: -0.8,
-  },
-  iconButton: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  notifDot: {
-    position: 'absolute',
-    top: 10,
-    right: 11,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
   },
   segment: {
     flexDirection: 'row',

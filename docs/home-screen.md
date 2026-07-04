@@ -9,9 +9,9 @@ mais valioso do matchmaking (tabela `swipes`, migration 0002).
 
 No vertical de arranque (ver `mvp-copa-stickers.md`), a Home vem tematizada:
 
-- **Barra de progresso do álbum** no topo (`AlbumProgress`): nome do álbum, %
-  de conclusão, "faltam N figurinhas" e "N repetidas p/ trocar" — dados da view
-  `user_collection_progress`. É o gancho de motivação do colecionador.
+- **Faixa fina de progresso** no topo (`AlbumProgress`): nome do álbum, % de
+  conclusão e "faltam N" numa linha + barra hairline — dados da view
+  `user_collection_progress`. Presença mínima para o card do deck ser o herói.
 - **Cards de figurinha**: número da camisa como herói (`#10`), país, selo
   dourado **ESPECIAL** para legends/holográficas, badges de troca/venda.
 - **Gancho do match recíproco** (`matchReason`): pílula verde "@fulano quer a

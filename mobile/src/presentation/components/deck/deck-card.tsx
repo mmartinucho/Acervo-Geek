@@ -4,7 +4,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { CategoryGradients, SpecialStickerGradient } from '@/constants/theme';
-import { CATEGORY_LABELS, CONDITION_LABELS, ItemCondition } from '@/domain/entities/item';
+import { CONDITION_LABELS, ItemCondition } from '@/domain/entities/item';
 import { DeckListing, formatDistance, formatPriceBRL } from '@/domain/entities/listing';
 
 const CONDITION_DOT: Record<ItemCondition, string> = {
@@ -14,8 +14,6 @@ const CONDITION_DOT: Record<ItemCondition, string> = {
   played: '#FB923C',
   damaged: '#F87171',
 };
-
-const PHOTO_COUNT = 3;
 
 function monogram(franchise: string): string {
   return franchise
@@ -56,12 +54,6 @@ export function DeckCard({ listing }: { listing: DeckListing }) {
 
       <ThemedText style={styles.hero}>{hero}</ThemedText>
 
-      <View style={styles.photoDots}>
-        {Array.from({ length: PHOTO_COUNT }).map((_, i) => (
-          <View key={i} style={[styles.photoDot, i === 0 && styles.photoDotActive]} />
-        ))}
-      </View>
-
       <View style={styles.topRow}>
         {item.isSpecial && (
           <View style={styles.specialChip}>
@@ -71,6 +63,7 @@ export function DeckCard({ listing }: { listing: DeckListing }) {
             </ThemedText>
           </View>
         )}
+        <View style={styles.spacer} />
         {listing.modes.includes('trade') && (
           <View style={styles.glassChip}>
             <Ionicons name="swap-horizontal" size={13} color="#FFF" />
@@ -86,12 +79,6 @@ export function DeckCard({ listing }: { listing: DeckListing }) {
             </ThemedText>
           </View>
         )}
-        <View style={styles.spacer} />
-        <View style={styles.categoryTag}>
-          <ThemedText type="small" style={styles.categoryTagText}>
-            {CATEGORY_LABELS[item.category].toUpperCase()}
-          </ThemedText>
-        </View>
       </View>
 
       <LinearGradient
@@ -125,7 +112,7 @@ export function DeckCard({ listing }: { listing: DeckListing }) {
           <View style={[styles.condDot, { backgroundColor: CONDITION_DOT[item.condition] }]} />
           <ThemedText style={styles.itemMeta}>
             {isSticker && item.country
-              ? `${item.country} · ${item.franchise}`
+              ? item.country
               : `${item.franchise} · ${CONDITION_LABELS[item.condition]}`}
           </ThemedText>
         </View>
@@ -179,27 +166,12 @@ const styles = StyleSheet.create({
     letterSpacing: 2,
     color: 'rgba(255,255,255,0.22)',
   },
-  photoDots: {
-    flexDirection: 'row',
-    gap: 6,
-    paddingHorizontal: 18,
-    paddingTop: 14,
-  },
-  photoDot: {
-    flex: 1,
-    height: 3,
-    borderRadius: 2,
-    backgroundColor: 'rgba(255,255,255,0.35)',
-  },
-  photoDotActive: {
-    backgroundColor: 'rgba(255,255,255,0.95)',
-  },
   topRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
     paddingHorizontal: 18,
-    paddingTop: 12,
+    paddingTop: 18,
   },
   spacer: {
     flex: 1,
@@ -230,18 +202,6 @@ const styles = StyleSheet.create({
   glassChipText: {
     color: '#FFFFFF',
     fontSize: 13,
-  },
-  categoryTag: {
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.55)',
-    borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-  },
-  categoryTagText: {
-    color: '#FFFFFF',
-    letterSpacing: 2,
-    fontSize: 11,
   },
   scrim: {
     position: 'absolute',
