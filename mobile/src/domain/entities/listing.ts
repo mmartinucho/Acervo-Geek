@@ -13,6 +13,9 @@ export interface DeckListing {
     franchise: string;
     category: ItemCategory;
     condition: ItemCondition;
+    // Foto do item (full-bleed no deck); sem ela o card usa um fundo escuro
+    // com brilho da cor da categoria.
+    imageUrl?: string;
     // Específico de figurinha: número do slot, país e se é especial/legend.
     stickerNumber?: string;
     country?: string;

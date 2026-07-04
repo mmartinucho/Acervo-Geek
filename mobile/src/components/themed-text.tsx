@@ -2,16 +2,20 @@ import { StyleSheet, Text, type TextProps } from 'react-native';
 
 import { Fonts, ThemeColor } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { useAccent } from '@/presentation/theme/accent-context';
 
-// Escala tipográfica única do app. display/title = Space Grotesk (personalidade);
-// o resto = Inter (neutra). Peso vem embutido na família (RN não sintetiza).
+// Escala tipográfica única do app, espelhando o protótipo do Figma:
+// títulos em sans neutra Medium com tracking bem negativo (≈ -0.05em),
+// rótulos pequenos em caixa alta com tracking largo (overline).
+// Peso vem embutido na FAMÍLIA (RN não sintetiza fontWeight).
 export type TextVariant =
-  | 'display' // hero/telas
+  | 'display' // hero/telas ("Acervo.", "Seus mundos.")
   | 'title' // títulos de card/seção grande
   | 'subtitle' // seção
   | 'body' // texto padrão
   | 'bodyMedium'
   | 'label' // botões/chips
+  | 'overline' // rótulos uppercase de tracking largo ("UNIVERSO ATIVO")
   | 'small'
   | 'smallBold'
   | 'caption'
@@ -27,34 +31,33 @@ export type ThemedTextProps = TextProps & {
 
 export function ThemedText({ style, type = 'body', themeColor, ...rest }: ThemedTextProps) {
   const theme = useTheme();
+  const { accent } = useAccent();
   const variant = type === 'default' ? 'body' : type;
 
-  return (
-    <Text
-      style={[{ color: theme[themeColor ?? 'text'] }, styles[variant], style]}
-      {...rest}
-    />
-  );
+  // linkPrimary acompanha o acento do universo ativo, não uma cor fixa.
+  const color = variant === 'linkPrimary' ? accent : theme[themeColor ?? 'text'];
+
+  return <Text style={[{ color }, styles[variant], style]} {...rest} />;
 }
 
 const styles = StyleSheet.create({
   display: {
     fontFamily: Fonts.display,
-    fontSize: 30,
-    lineHeight: 36,
-    letterSpacing: -0.6,
+    fontSize: 36,
+    lineHeight: 38,
+    letterSpacing: -1.8, // tracking-tighter (-0.05em)
   },
   title: {
     fontFamily: Fonts.display,
-    fontSize: 22,
+    fontSize: 24,
     lineHeight: 28,
-    letterSpacing: -0.4,
+    letterSpacing: -1.2,
   },
   subtitle: {
-    fontFamily: Fonts.displaySemi,
+    fontFamily: Fonts.display,
     fontSize: 18,
     lineHeight: 24,
-    letterSpacing: -0.2,
+    letterSpacing: -0.45, // tracking-tight (-0.025em)
   },
   body: {
     fontFamily: Fonts.regular,
@@ -67,9 +70,17 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
   label: {
-    fontFamily: Fonts.semibold,
+    fontFamily: Fonts.medium,
     fontSize: 15,
     lineHeight: 20,
+    letterSpacing: -0.15,
+  },
+  overline: {
+    fontFamily: Fonts.semibold,
+    fontSize: 11,
+    lineHeight: 16,
+    letterSpacing: 1.65, // tracking-[0.15em]
+    textTransform: 'uppercase',
   },
   small: {
     fontFamily: Fonts.medium,
@@ -95,7 +106,6 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.semibold,
     fontSize: 14,
     lineHeight: 20,
-    color: '#5B3DF5',
   },
   code: {
     fontFamily: Fonts.mono,

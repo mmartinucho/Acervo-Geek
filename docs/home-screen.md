@@ -9,37 +9,36 @@ mais valioso do matchmaking (tabela `swipes`, migration 0002).
 
 No vertical de arranque (ver `mvp-copa-stickers.md`), a Home vem tematizada:
 
-- **Faixa fina de progresso** no topo (`AlbumProgress`): nome do álbum, % de
-  conclusão e "faltam N" numa linha + barra hairline — dados da view
-  `user_collection_progress`. Presença mínima para o card do deck ser o herói.
-- **Cards de figurinha**: número da camisa como herói (`#10`), país, selo
-  dourado **ESPECIAL** para legends/holográficas, badges de troca/venda.
-- **Gancho do match recíproco** (`matchReason`): pílula verde "@fulano quer a
-  sua repetida do Neymar" — o resultado de `find_sticker_matches`. Ao deslizar
-  para a direita, o overlay "Deu match!" fecha o loop ("vocês têm as repetidas
-  um do outro").
+- **Deck edge-to-edge**: o card ocupa a tela; header e botões flutuam sobre ele.
+  A barra de progresso do álbum vive na aba **Coleção** ("Acervo."), não na Home.
+- **Cards de figurinha**: foto full-bleed (fallback: base escura com brilho da
+  cor da categoria + monograma), scrim preto na base e um **único badge** de modo
+  no topo (Troca ou preço) — como no protótipo.
+- **Gancho do match recíproco** (`matchReason`): pílula na **cor de acento do
+  universo** ("Quer sua repetida do Neymar") — resultado de `find_sticker_matches`.
+  Ao deslizar para a direita num match recíproco, o overlay **"Sinergia."** fecha
+  o loop (dois avatares + Repeat + "Iniciar Contato").
 
-O card é agnóstico de categoria: sem figurinha, cai no visual aurora + monograma
-da franquia (cards/figures). Só a camada de dados muda por vertical.
+O card é agnóstico de categoria: sem foto, cai no visual escuro + brilho da
+franquia (cards/figures). Só a camada de dados muda por vertical.
 
 ## Wireframe
 
 ```
 ┌──────────────────────────────────────┐
-│ Descobrir                       (📷) │  título + atalho para o scan
-│ [Tudo] [Troca] [Venda]               │  filtro por modo de anúncio
-│ ┌──────────────────────────────────┐ │
-│ │  QUERO↗            badges: Troca │ │  carimbos aparecem ao arrastar
-│ │                       R$ 1.250   │ │
-│ │         [arte do item]           │ │  monograma sobre cor da categoria
-│ │                                  │ │  (foto real na fase Supabase/S3)
-│ │  Umbreon VMAX Alt Art            │ │
-│ │  Pokémon TCG · Quase novo        │ │
-│ │  @cardshark_rj · ★4.9 · Rio      │ │
+│ (🏆 Copa do Mundo ▾)      (📍 100 km) │  pílulas de vidro flutuantes
+│ ┌──────────────────────────────────┐ │  (universo abre dropdown)
+│ │  [Troca]                         │ │  único badge de modo no topo
+│ │                                  │ │
+│ │        [foto do item]            │ │  full-bleed (fallback: brilho+monograma)
+│ │                                  │ │
+│ │  ✨ Quer sua repetida do Neymar   │ │  match hint na COR DE ACENTO
+│ │  Lionel Messi                    │ │
+│ │  Argentina · Impecável           │ │
+│ │  ┌ vidro: @bruno · ★4.9 · 4 km ┐ │ │  card de vidro do dono
 │ └──────────────────────────────────┘ │
-│           (✕)        (♥)             │  botões espelham os gestos
-├──────────────────────────────────────┤
-│ Descobrir | Buscar | Negócios | Perfil│
+│           (✕)        (♥ acento)       │  X vidro / ♥ acento com glow
+│        ( ✨ ▨ 🔍  [◈]  💼 👤 )        │  nav flutuante + FAB de scan (acento)
 └──────────────────────────────────────┘
 ```
 
@@ -48,11 +47,11 @@ da franquia (cards/figures). Só a camada de dados muda por vertical.
 1. **Anúncio ≥ item**: um card do deck é um exemplar de `user_inventory` com
    `for_trade` e/ou `for_sale + asking_price`. Badges "Troca" e preço
    convivem no mesmo card.
-2. **Swipe direito em anúncio de troca** com score alto → overlay **"Deu
-   match!"** com CTA "Propor troca". Em anúncio de venda, o "quero" entra na
-   lista de interesses/negociação de compra.
+2. **Swipe direito em anúncio de troca** com score alto → overlay **"Sinergia."**
+   com CTA "Iniciar Contato". Em anúncio de venda, o "quero" entra na lista de
+   interesses/negociação de compra.
 3. **Deck ordenado pelo matchmaking**: `match_suggestions`/score do Databricks
-   define a ordem; filtros Tudo/Troca/Venda são locais.
+   define a ordem.
 4. **Deck nunca trava**: vazio → CTA "Recomeçar" (e, na fase Supabase, o
    Realtime repõe cards novos).
 
@@ -73,8 +72,40 @@ Contratos: `DeckListing` (domain) ⇄ `DeckRepository` (port) ⇄
 
 ```
 Descobrir  → este deck
-Buscar     → catálogo/inventários por texto e categoria
-Negócios   → trocas, compras e vendas com status (antiga "Trocas")
-Perfil     → acervo, wishlist, reputação
-Scan       → modal (câmera + IA) acessível pelo ícone no topo do deck
+Coleção    → "Acervo.": fichário do universo ativo (progresso + grid de cartas)
+Buscar     → "Explorar.": catálogo/inventários por texto e categoria
+Negócios   → "Negociações.": abas Ativos/Histórico com status
+Perfil     → nome, stats, "Universos Ativos", toggle de tema
+Scan       → modal (câmera + IA) no FAB central da nav flutuante
 ```
+
+## Design aplicado (Figma)
+
+O design do protótipo (`design/figma-make/src/app/App.tsx`) foi aplicado a todas
+as telas. Decisões que ficaram (fonte da verdade para futuras telas):
+
+- **Tema dark-first**: fundos `#0a0a0a`/`#050505`, superfície `#111`, "vidro"
+  (`white/5` + borda `white/10`) via `expo-blur`. Modo claro `#FAFAFA`. Tokens em
+  `mobile/src/constants/theme.ts`. Toggle Sol/Lua no Perfil sobrescreve o tema do
+  sistema (`presentation/theme/theme-mode-context.tsx`); todo o app lê de
+  `hooks/use-color-scheme`, então o toggle re-pinta tudo.
+- **Tipografia**: uma sans neutra única — **Inter**. Títulos usam
+  `Inter_500Medium` com tracking negativo forte (não Space Grotesk, que foi
+  removida). Peso **sempre** vem da família (`Fonts.*`), nunca de `fontWeight`
+  (RN não sintetiza). Escala em `components/themed-text.tsx`.
+- **Ícones**: `lucide-react-native` (+ `react-native-svg`), fiéis ao protótipo
+  (traço fino, `strokeWidth` ajustável). Ionicons saiu das telas migradas.
+- **Acento por universo**: a cor viva vem do universo ativo, não de um tint fixo.
+  `useAccent()` (`presentation/theme/accent-context.tsx`) expõe `accent` a partir
+  do `ThemeRepository`; ação primária, barra de progresso, match hint e o FAB de
+  scan consomem dele. Trocar de universo (header do Descobrir, aba Coleção ou
+  Perfil) re-pinta o acento em todo o app. Tabela canônica em
+  `UniverseAccents` (Copa `#10B981`, Pokémon `#EF4444`, Yu-Gi-Oh `#D97706`,
+  One Piece `#3B82F6`, Funko `#8B5CF6`, Magic `#14B8A6`), espelhada em
+  `supabase/seed.sql` e nos mocks.
+- **Onboarding**: login (landing social + form de e-mail) → "Seus mundos."
+  (seleção de universo, grava o ativo) → "Fichário." (monta o álbum) → app.
+
+> Nota: o repositório não tem um `CLAUDE.md` com seções numeradas (o
+> `mobile/CLAUDE.md` apenas importa o `AGENTS.md` do Expo), então o registro do
+> "design aplicado" ficou aqui em vez de numa "Seção 8".
