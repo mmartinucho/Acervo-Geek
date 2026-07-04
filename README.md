@@ -1,4 +1,6 @@
-# GeekMatch
+# Acervo Geek
+
+> Codinome anterior do projeto: **GeekMatch**.
 
 Marketplace inteligente para colecionadores (cards, action figures, etc.) que elimina a desorganização de grupos de chat e fóruns através de três pilares:
 
@@ -36,11 +38,29 @@ docs/
 supabase/
   migrations/
     0001_initial_schema.sql  # Esquema completo do MVP com RLS e índices
+mobile/                      # App React Native + Expo (TypeScript)
+  src/
+    app/                     # Rotas (Expo Router): tabs + modal de scan
+    domain/                  # Entidades puras (MatchSuggestion, Trade)
+    application/             # Portas (interfaces de repositório)
+    infrastructure/          # Implementações (mocks hoje, Supabase depois)
+    presentation/            # Componentes e hooks das telas
 ```
+
+## Rodando o app
+
+```bash
+cd mobile
+npm install
+npm start        # Expo Go no celular, ou 'npm run web' no navegador
+```
+
+As telas atuais usam repositórios mock (`src/infrastructure/repositories/`) —
+a UI já segue o contrato das tabelas do Supabase.
 
 ## Próximos passos
 
 1. Criar o projeto Supabase e aplicar `supabase/migrations/0001_initial_schema.sql` (`supabase db push`).
-2. Bootstrap do app: `npx create-expo-app@latest app --template tabs` seguindo a estrutura de `docs/home-screen.md`.
-3. Configurar bucket S3 + upload via URL pré-assinada (Edge Function `get-upload-url`).
+2. Trocar os mocks por implementações Supabase em `mobile/src/infrastructure/` (auth + PostgREST + Realtime).
+3. Fluxo de scan real: `expo-camera` + bucket S3 com URL pré-assinada (Edge Function `get-upload-url`).
 4. Configurar ingestão CDC no Databricks conforme `docs/databricks-integration.md`.

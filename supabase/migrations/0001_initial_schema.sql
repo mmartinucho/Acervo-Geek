@@ -1,5 +1,5 @@
 -- ============================================================================
--- GeekMatch — Esquema inicial (MVP)
+-- Acervo Geek — Esquema inicial (MVP)
 -- Aplicar via: supabase db push  (ou psql -f)
 --
 -- Convenções:

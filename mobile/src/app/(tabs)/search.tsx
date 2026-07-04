@@ -1,0 +1,103 @@
+import { useState } from 'react';
+import { Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
+import { Spacing } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
+
+const CATEGORIES = [
+  { key: 'card', label: '🃏 Cards' },
+  { key: 'figure', label: '🗿 Figures' },
+  { key: 'comic', label: '📚 HQs' },
+  { key: 'game', label: '🎮 Games' },
+];
+
+export default function SearchScreen() {
+  const theme = useTheme();
+  const [query, setQuery] = useState('');
+  const [category, setCategory] = useState<string | null>(null);
+
+  return (
+    <ThemedView style={styles.container}>
+      <SafeAreaView style={styles.safeArea} edges={['top']}>
+        <ThemedText type="subtitle">Buscar</ThemedText>
+        <TextInput
+          value={query}
+          onChangeText={setQuery}
+          placeholder="Nome do item, franquia ou set…"
+          placeholderTextColor={theme.textSecondary}
+          style={[
+            styles.input,
+            { backgroundColor: theme.backgroundElement, color: theme.text },
+          ]}
+        />
+        <View style={styles.chips}>
+          {CATEGORIES.map((c) => {
+            const selected = category === c.key;
+            return (
+              <Pressable
+                key={c.key}
+                onPress={() => setCategory(selected ? null : c.key)}
+                style={[
+                  styles.chip,
+                  { backgroundColor: selected ? theme.tint : theme.backgroundElement },
+                ]}>
+                <ThemedText
+                  type="smallBold"
+                  style={selected ? { color: theme.onTint } : undefined}>
+                  {c.label}
+                </ThemedText>
+              </Pressable>
+            );
+          })}
+        </View>
+        <View style={styles.placeholder}>
+          <ThemedText type="small" themeColor="textSecondary" style={styles.placeholderText}>
+            {query
+              ? 'A busca no catálogo entra quando o Supabase for conectado.'
+              : 'Busque no catálogo ou explore inventários disponíveis para troca.'}
+          </ThemedText>
+        </View>
+      </SafeAreaView>
+    </ThemedView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  safeArea: {
+    flex: 1,
+    paddingHorizontal: Spacing.four,
+    paddingTop: Spacing.three,
+    gap: Spacing.three,
+  },
+  input: {
+    borderRadius: Spacing.two,
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.two + 2,
+    fontSize: 16,
+  },
+  chips: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.two,
+  },
+  chip: {
+    borderRadius: 999,
+    paddingHorizontal: Spacing.three,
+    paddingVertical: Spacing.one + 2,
+  },
+  placeholder: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: Spacing.four,
+  },
+  placeholderText: {
+    textAlign: 'center',
+  },
+});

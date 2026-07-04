@@ -1,4 +1,4 @@
-# GeekMatch — Arquitetura do MVP
+# Acervo Geek — Arquitetura do MVP
 
 ## Princípios
 
