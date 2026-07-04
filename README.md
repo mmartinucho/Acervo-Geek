@@ -42,6 +42,8 @@ supabase/
     0002_marketplace.sql     # Venda (for_sale/preço) + swipes
     0003_copa_stickers.sql   # Álbuns, progresso, match de repetidas, troca justa
     0004_geo_radar.sql       # Localização + raio de busca + distância no match
+    0005_deck_rpc.sql        # RPC deck_for_user: card pronto (item+dono+match)
+  seed.sql                   # Álbum Copa 2026 (catálogo inicial de figurinhas)
 mobile/                      # App React Native + Expo (TypeScript)
   src/
     app/                     # Rotas (Expo Router): tabs + modal de scan
@@ -59,8 +61,17 @@ npm install
 npm start        # Expo Go no celular, ou 'npm run web' no navegador
 ```
 
-As telas atuais usam repositórios mock (`src/infrastructure/repositories/`) —
-a UI já segue o contrato das tabelas do Supabase.
+Sem configuração, o app roda com repositórios **mock** — a UI é idêntica à
+versão conectada. Para ligar ao Supabase real, copie `mobile/.env.example` para
+`mobile/.env` e preencha `EXPO_PUBLIC_SUPABASE_URL` e
+`EXPO_PUBLIC_SUPABASE_ANON_KEY`. O `container` (`src/infrastructure/container.ts`)
+troca o mock pelo `SupabaseDeckRepository` automaticamente.
+
+### Preparar o banco
+
+```bash
+supabase db reset     # aplica migrations 0001–0005 + seed (álbum Copa 2026)
+```
 
 ## Próximos passos
 

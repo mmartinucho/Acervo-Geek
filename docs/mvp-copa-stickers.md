@@ -71,9 +71,20 @@ O que tira a briga do "quanto vale" das mãos dos usuários:
   swipe dos outros. (Limites e gráficos são leitura sobre dados que o Databricks
   já produz — sem nova infra.)
 
-## 6. Próximo passo concreto
+## 6. Estado da integração
 
-1. Aplicar `0003_copa_stickers.sql`.
-2. Criar o seed do primeiro álbum (JSON → `collections` + `items`).
-3. Ligar a tela Descobrir ao Supabase (trocar o mock por `swipes` +
-   `find_sticker_matches`) e o Scan à IA Vision.
+- ✅ **Seed do álbum** (`supabase/seed.sql`): Copa 2026 com escudos especiais e
+  craques por seleção. `total_slots` recalculado do catálogo semeado.
+- ✅ **RPC `deck_for_user`** (`0005_deck_rpc.sql`): devolve o card já pronto
+  (item + dono + distância + modos/preço + gancho do match), sem N+1 no cliente.
+  Validada em Postgres: card correto a 4,5 km, exclusão por radar funcionando.
+- ✅ **Camada Supabase no app**: `SupabaseDeckRepository` (RPC `deck_for_user`,
+  view `user_collection_progress`, upsert em `swipes`) atrás de env vars; sem
+  elas, mock. `container.ts` faz a troca automática.
+
+### Falta para ficar ao vivo
+
+1. **Tela de auth** (Supabase Auth) + `persistSession` com AsyncStorage — hoje o
+   client sobe sem sessão, então o deck real vem vazio até logar.
+2. **Scan real**: `expo-camera` → Edge Function → IA Vision (nº + especial).
+3. `SupabaseDealRepository` (Negócios) — ainda em mock.
