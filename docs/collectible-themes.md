@@ -1,10 +1,26 @@
-# MVP vertical — Figurinhas da Copa
+# Universos colecionáveis (temas)
 
-Decisão de arranque: em vez de abraçar todos os colecionáveis no dia 1, o MVP
-foca **um álbum de figurinhas da Copa**. Público massivo, dor cristalina
+O Acervo Geek é um marketplace do **universo geek inteiro**: o usuário escolhe
+um ou mais **universos** que coleciona — Copa do Mundo (figurinhas), Pokémon TCG,
+Yu-Gi-Oh, One Piece, Funko, Magic... — e o app (deck, coleção, match) é escopado
+pelo universo **ativo**. Trocar de universo troca todo o conteúdo.
+
+## Universos (tabela `themes`, migration 0007)
+
+Cada universo tem `slug`, `name`, `kind` (`stickers` | `tcg` | `figures`),
+`accent` (cor) e `emoji`. `items` e `collections` carregam `theme_id`; o perfil
+guarda `active_theme_id` e `user_themes` lista os universos do usuário.
+`resolve_theme(user)` devolve o ativo (ou o 1º disponível, como fallback), e as
+RPCs `album_sheet`/`find_sticker_matches`/`deck_for_user` filtram por ele — um
+match nunca cruza Pokémon com Copa. Seed inicial: Copa 2026, Pokémon TCG e
+Yu-Gi-Oh (validado em Postgres).
+
+## Tema de lançamento — Copa do Mundo
+
+A Copa é o **primeiro universo** a ser empurrado: público massivo, dor cristalina
 (repetida ↔ faltante) e ciclo curto (3–6 meses) que valida rápido a mecânica de
-swipe/match e a IA de precificação. A base de usuários conquistada migra depois
-para cards, figures e Funkos — o modelo de dados é o mesmo.
+swipe/match. Mas é só um tema entre vários — o modelo de dados é o mesmo para
+cards, figures e Funkos.
 
 ## 1. Modelo "tenho / preciso / repetida" (reaproveita o schema)
 

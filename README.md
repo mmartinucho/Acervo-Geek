@@ -2,11 +2,13 @@
 
 > Codinome anterior do projeto: **GeekMatch**.
 
-Marketplace inteligente para colecionadores (cards, action figures, etc.) que elimina a desorganização de grupos de chat e fóruns através de três pilares:
+Marketplace inteligente do **universo geek** (cards de TCG, figurinhas de álbum, action figures, Funko, HQs, games) que elimina a desorganização de grupos de chat e fóruns. O usuário escolhe um ou mais **universos** que coleciona — Copa do Mundo, Pokémon, Yu-Gi-Oh... — e o app se adapta ao universo ativo. Três pilares:
 
-1. **Reconhecimento de itens via câmera com IA** — o usuário fotografa o item e o sistema identifica automaticamente o card/figura no catálogo.
-2. **Matchmaking inteligente** — sugestões de troca baseadas no cruzamento de inventário × lista de desejos entre usuários.
+1. **Reconhecimento de itens via câmera com IA** — o usuário fotografa o item e o sistema identifica automaticamente o card/figura/figurinha no catálogo.
+2. **Matchmaking inteligente** — sugestões de troca baseadas no cruzamento de inventário × lista de desejos entre usuários, escopadas pelo universo ativo.
 3. **Sistema de reputação** — confiança nas transações via avaliações pós-troca.
+
+Universo de **lançamento**: Copa do Mundo (figurinhas). Detalhes do modelo de temas em [`docs/collectible-themes.md`](./docs/collectible-themes.md).
 
 ## Stack Técnica
 
@@ -35,7 +37,7 @@ docs/
   architecture.md            # Arquitetura, camadas Clean Architecture, decisões
   databricks-integration.md  # Fluxo Supabase ↔ Databricks (ingestão, IA, write-back)
   home-screen.md             # Deck de swipe (tela Descobrir)
-  mvp-copa-stickers.md       # Vertical de arranque: figurinhas da Copa
+  collectible-themes.md      # Universos (Copa, Pokémon, Yu-Gi-Oh...) + Copa MVP
 supabase/
   migrations/
     0001_initial_schema.sql  # Esquema base do MVP com RLS e índices
@@ -44,7 +46,8 @@ supabase/
     0004_geo_radar.sql       # Localização + raio de busca + distância no match
     0005_deck_rpc.sql        # RPC deck_for_user: card pronto (item+dono+match)
     0006_album_sheet.sql     # Onboarding: album_sheet + set_slot_state RPCs
-  seed.sql                   # Álbum Copa 2026 (catálogo inicial de figurinhas)
+    0007_themes.sql          # Universos: themes + escopo por universo ativo
+  seed.sql                   # Universos (Copa/Pokémon/Yu-Gi-Oh) + catálogos
 mobile/                      # App React Native + Expo (TypeScript)
   src/
     app/                     # Rotas (Expo Router): tabs + modal de scan
