@@ -23,6 +23,7 @@ export interface DeckListing {
     reputation: number;
     reviewsCount: number;
     city?: string;
+    distanceKm?: number; // distância até o usuário (radar de proximidade)
   };
   modes: ListingMode[];
   priceBRL?: number;
@@ -34,4 +35,10 @@ export interface DeckListing {
 
 export function formatPriceBRL(price: number): string {
   return `R$ ${price.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, '.')}`;
+}
+
+export function formatDistance(km: number): string {
+  if (km < 1) return 'menos de 1 km';
+  if (km < 10) return `${km.toFixed(1).replace('.', ',')} km`;
+  return `${Math.round(km)} km`;
 }

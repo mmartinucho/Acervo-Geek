@@ -8,6 +8,7 @@ import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { AlbumProgress } from '@/presentation/components/deck/album-progress';
+import { RadarPill } from '@/presentation/components/deck/radar-pill';
 import { SwipeDeck } from '@/presentation/components/deck/swipe-deck';
 import { DeckFilter, useDeck } from '@/presentation/hooks/use-deck';
 
@@ -20,23 +21,37 @@ const FILTERS: { key: DeckFilter; label: string }[] = [
 export default function DiscoverScreen() {
   const router = useRouter();
   const theme = useTheme();
-  const { cards, progress, filter, setFilter, swipe, celebration, dismissCelebration, refresh } =
-    useDeck();
+  const {
+    cards,
+    progress,
+    filter,
+    setFilter,
+    radiusKm,
+    setRadiusKm,
+    outOfRange,
+    swipe,
+    celebration,
+    dismissCelebration,
+    refresh,
+  } = useDeck();
 
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea} edges={['top']}>
         <View style={styles.header}>
           <ThemedText style={styles.title}>Descobrir</ThemedText>
-          <Pressable
-            style={[
-              styles.iconButton,
-              { backgroundColor: theme.backgroundElement, borderColor: theme.border },
-            ]}
-            accessibilityLabel="Notificações">
-            <Ionicons name="notifications-outline" size={20} color={theme.text} />
-            <View style={[styles.notifDot, { backgroundColor: theme.tint }]} />
-          </Pressable>
+          <View style={styles.headerActions}>
+            <RadarPill radiusKm={radiusKm} onChange={setRadiusKm} />
+            <Pressable
+              style={[
+                styles.iconButton,
+                { backgroundColor: theme.backgroundElement, borderColor: theme.border },
+              ]}
+              accessibilityLabel="Notificações">
+              <Ionicons name="notifications-outline" size={20} color={theme.text} />
+              <View style={[styles.notifDot, { backgroundColor: theme.tint }]} />
+            </Pressable>
+          </View>
         </View>
 
         {progress && <AlbumProgress progress={progress} />}
@@ -66,17 +81,41 @@ export default function DiscoverScreen() {
         <View style={styles.deckArea}>
           {cards.length === 0 ? (
             <View style={styles.emptyState}>
-              <ThemedText style={styles.emptyTitle}>Você viu tudo por aqui</ThemedText>
-              <ThemedText type="small" themeColor="textSecondary" style={styles.emptyHint}>
-                Volte mais tarde ou recomece o deck.
-              </ThemedText>
-              <Pressable
-                onPress={refresh}
-                style={[styles.restartButton, { backgroundColor: theme.text }]}>
-                <ThemedText type="smallBold" style={{ color: theme.background }}>
-                  Recomeçar
-                </ThemedText>
-              </Pressable>
+              <Ionicons
+                name={outOfRange > 0 ? 'locate-outline' : 'checkmark-done-outline'}
+                size={40}
+                color={theme.textSecondary}
+              />
+              {outOfRange > 0 ? (
+                <>
+                  <ThemedText style={styles.emptyTitle}>Ninguém por perto</ThemedText>
+                  <ThemedText type="small" themeColor="textSecondary" style={styles.emptyHint}>
+                    {outOfRange} {outOfRange === 1 ? 'match está' : 'matches estão'} fora do seu
+                    radar de {radiusKm} km. Amplie o raio para encontrá-{outOfRange === 1 ? 'lo' : 'los'}.
+                  </ThemedText>
+                  <Pressable
+                    onPress={() => setRadiusKm(null)}
+                    style={[styles.restartButton, { backgroundColor: theme.tint }]}>
+                    <ThemedText type="smallBold" style={{ color: theme.onTint }}>
+                      Buscar em todo o Brasil
+                    </ThemedText>
+                  </Pressable>
+                </>
+              ) : (
+                <>
+                  <ThemedText style={styles.emptyTitle}>Você viu tudo por aqui</ThemedText>
+                  <ThemedText type="small" themeColor="textSecondary" style={styles.emptyHint}>
+                    Volte mais tarde ou recomece o deck.
+                  </ThemedText>
+                  <Pressable
+                    onPress={refresh}
+                    style={[styles.restartButton, { backgroundColor: theme.text }]}>
+                    <ThemedText type="smallBold" style={{ color: theme.background }}>
+                      Recomeçar
+                    </ThemedText>
+                  </Pressable>
+                </>
+              )}
             </View>
           ) : (
             <SwipeDeck cards={cards} onSwipe={swipe} />
@@ -162,6 +201,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
   },
   title: {
     fontSize: 32,

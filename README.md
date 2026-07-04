@@ -41,6 +41,7 @@ supabase/
     0001_initial_schema.sql  # Esquema base do MVP com RLS e índices
     0002_marketplace.sql     # Venda (for_sale/preço) + swipes
     0003_copa_stickers.sql   # Álbuns, progresso, match de repetidas, troca justa
+    0004_geo_radar.sql       # Localização + raio de busca + distância no match
 mobile/                      # App React Native + Expo (TypeScript)
   src/
     app/                     # Rotas (Expo Router): tabs + modal de scan

@@ -30,7 +30,10 @@ is_special`, a view de progresso e a calculadora de troca justa.
 3. **Lista de desejos** — marca os faltantes → `wishlists`.
 4. **Swipe** — a tela **Descobrir** já mostra um card por vez; para figurinhas
    ele prioriza os seus faltantes que outros têm repetido. Direita = "quero"
-   (grava em `swipes`), esquerda = passo.
+   (grava em `swipes`), esquerda = passo. Um **radar de proximidade** (raio
+   ajustável 25/100/500 km/Brasil) filtra quem está longe demais — troca de
+   figurinha é presencial ou frete curto. Distância vem de `distance_km()` e o
+   raio padrão de `profiles.search_radius_km` (migration 0004).
 5. **Match inteligente** — quando há dupla ponta (minha repetida que ele quer +
    repetida dele que eu quero), dispara o overlay "Deu match!". Sem esperar o
    batch do Databricks, a função `find_sticker_matches(user)` já resolve o par;

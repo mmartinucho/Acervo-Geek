@@ -5,7 +5,7 @@ import { StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { CategoryGradients, SpecialStickerGradient } from '@/constants/theme';
 import { CATEGORY_LABELS, CONDITION_LABELS, ItemCondition } from '@/domain/entities/item';
-import { DeckListing, formatPriceBRL } from '@/domain/entities/listing';
+import { DeckListing, formatDistance, formatPriceBRL } from '@/domain/entities/listing';
 
 const CONDITION_DOT: Record<ItemCondition, string> = {
   mint: '#4ADE80',
@@ -135,7 +135,18 @@ export function DeckCard({ listing }: { listing: DeckListing }) {
           </ThemedText>
           <Ionicons name="checkmark-circle" size={14} color="#60A5FA" />
           <ThemedText style={styles.ownerRep}>★ {owner.reputation.toFixed(1)}</ThemedText>
-          {owner.city && <ThemedText style={styles.ownerCity}>· {owner.city}</ThemedText>}
+          {owner.distanceKm != null && (
+            <>
+              <Ionicons name="location" size={13} color="rgba(255,255,255,0.8)" />
+              <ThemedText style={styles.ownerCity}>
+                {owner.city ? `${owner.city} · ` : ''}
+                {formatDistance(owner.distanceKm)}
+              </ThemedText>
+            </>
+          )}
+          {owner.distanceKm == null && owner.city && (
+            <ThemedText style={styles.ownerCity}>· {owner.city}</ThemedText>
+          )}
         </View>
       </View>
     </View>
