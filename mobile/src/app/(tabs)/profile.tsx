@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useRouter } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -26,6 +27,7 @@ function StatBox({ value, label }: { value: string; label: string }) {
 
 export default function ProfileScreen() {
   const theme = useTheme();
+  const router = useRouter();
   const { user, requiresAuth, signOut } = useAuth();
   const username = user?.username ?? user?.email?.split('@')[0] ?? 'colecionador';
 
@@ -58,10 +60,12 @@ export default function ProfileScreen() {
           <StatBox value="9" label="Na wishlist" />
         </View>
 
-        <Pressable style={[styles.primaryCta, { backgroundColor: theme.tint }]}>
-          <Ionicons name="pricetag-outline" size={18} color={theme.onTint} />
+        <Pressable
+          onPress={() => router.push('/onboarding')}
+          style={[styles.primaryCta, { backgroundColor: theme.tint }]}>
+          <Ionicons name="grid-outline" size={18} color={theme.onTint} />
           <ThemedText type="smallBold" style={{ color: theme.onTint }}>
-            Anunciar item (troca ou venda)
+            Montar meu álbum
           </ThemedText>
         </Pressable>
 

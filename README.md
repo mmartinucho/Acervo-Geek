@@ -43,6 +43,7 @@ supabase/
     0003_copa_stickers.sql   # Álbuns, progresso, match de repetidas, troca justa
     0004_geo_radar.sql       # Localização + raio de busca + distância no match
     0005_deck_rpc.sql        # RPC deck_for_user: card pronto (item+dono+match)
+    0006_album_sheet.sql     # Onboarding: album_sheet + set_slot_state RPCs
   seed.sql                   # Álbum Copa 2026 (catálogo inicial de figurinhas)
 mobile/                      # App React Native + Expo (TypeScript)
   src/

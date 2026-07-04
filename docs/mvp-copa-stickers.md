@@ -86,8 +86,14 @@ O que tira a briga do "quanto vale" das mãos dos usuários:
   Sessão persiste em AsyncStorage. Sem backend, o app roda com usuário demo
   (sem tela de login); com backend, exige login e o Perfil mostra "Sair".
 
+- ✅ **Onboarding (montar o álbum)**: tela `onboarding` agrupada por seleção,
+  chips estilo figurinha onde o usuário marca tenho/repetida/preciso — popula
+  `user_inventory` e `wishlists` via RPCs `album_sheet`/`set_slot_state`
+  (migration 0006, validadas em Postgres). Guard de rota leva o usuário novo
+  (sem coleção, `has_collection_data` = false) direto para cá após o login.
+
 ### Falta para ficar ao vivo
 
-1. **Scan real**: `expo-camera` → Edge Function → IA Vision (nº + especial).
-2. **Onboarding**: escolher o álbum e montar inventário/wishlist iniciais.
-3. `SupabaseDealRepository` (Negócios) — ainda em mock.
+1. **Scan real**: `expo-camera` → Edge Function → IA Vision (nº + especial) —
+   acelera o onboarding (fotografar em vez de marcar na mão).
+2. `SupabaseDealRepository` (Negócios) — ainda em mock.
