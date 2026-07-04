@@ -7,6 +7,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { BrandGradient, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { useAuth } from '@/presentation/auth/auth-context';
 import { AvatarInitials } from '@/presentation/components/avatar-initials';
 
 function StatBox({ value, label }: { value: string; label: string }) {
@@ -25,6 +26,8 @@ function StatBox({ value, label }: { value: string; label: string }) {
 
 export default function ProfileScreen() {
   const theme = useTheme();
+  const { user, requiresAuth, signOut } = useAuth();
+  const username = user?.username ?? user?.email?.split('@')[0] ?? 'colecionador';
 
   return (
     <ThemedView style={styles.container}>
@@ -37,9 +40,9 @@ export default function ProfileScreen() {
       <SafeAreaView style={styles.safeArea} edges={['top']}>
         <View style={styles.header}>
           <View style={[styles.avatarRing, { borderColor: theme.background }]}>
-            <AvatarInitials username="michael.m" size={84} />
+            <AvatarInitials username={username} size={84} />
           </View>
-          <ThemedText style={styles.name}>@michael.m</ThemedText>
+          <ThemedText style={styles.name}>@{username}</ThemedText>
           <View style={styles.repRow}>
             <Ionicons name="star" size={15} color="#FBBF24" />
             <ThemedText type="smallBold">4.7</ThemedText>
@@ -70,6 +73,15 @@ export default function ProfileScreen() {
             Supabase (user_inventory e wishlists).
           </ThemedText>
         </ThemedView>
+
+        {requiresAuth && (
+          <Pressable onPress={signOut} style={styles.signOut}>
+            <Ionicons name="log-out-outline" size={18} color={theme.textSecondary} />
+            <ThemedText type="smallBold" themeColor="textSecondary">
+              Sair
+            </ThemedText>
+          </Pressable>
+        )}
       </SafeAreaView>
     </ThemedView>
   );
@@ -145,5 +157,12 @@ const styles = StyleSheet.create({
   },
   hintText: {
     textAlign: 'center',
+  },
+  signOut: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.two,
+    paddingVertical: Spacing.two,
   },
 });

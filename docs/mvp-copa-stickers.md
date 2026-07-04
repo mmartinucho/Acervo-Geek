@@ -81,10 +81,13 @@ O que tira a briga do "quanto vale" das mãos dos usuários:
 - ✅ **Camada Supabase no app**: `SupabaseDeckRepository` (RPC `deck_for_user`,
   view `user_collection_progress`, upsert em `swipes`) atrás de env vars; sem
   elas, mock. `container.ts` faz a troca automática.
+- ✅ **Autenticação**: `AuthRepository` (Supabase/mock), provider `useAuth`,
+  tela de login/cadastro (`(auth)/sign-in`) e guard de rota no layout raiz.
+  Sessão persiste em AsyncStorage. Sem backend, o app roda com usuário demo
+  (sem tela de login); com backend, exige login e o Perfil mostra "Sair".
 
 ### Falta para ficar ao vivo
 
-1. **Tela de auth** (Supabase Auth) + `persistSession` com AsyncStorage — hoje o
-   client sobe sem sessão, então o deck real vem vazio até logar.
-2. **Scan real**: `expo-camera` → Edge Function → IA Vision (nº + especial).
+1. **Scan real**: `expo-camera` → Edge Function → IA Vision (nº + especial).
+2. **Onboarding**: escolher o álbum e montar inventário/wishlist iniciais.
 3. `SupabaseDealRepository` (Negócios) — ainda em mock.
