@@ -1,9 +1,8 @@
-import { BlurView } from 'expo-blur';
-import { Image } from 'expo-image';
+import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useRouter } from 'expo-router';
-import { Sparkles, X } from 'lucide-react-native';
-import { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Camera, Check, Sparkles, X } from 'lucide-react-native';
+import { useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -15,50 +14,91 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { Fonts, Spacing } from '@/constants/theme';
+import { useScan } from '@/presentation/hooks/use-scan';
 
-// Modal do scanner (protótipo): câmera full-screen, moldura de foco com
-// scanline animada, header e card do item detectado. Sempre escuro (câmera),
-// independente do tema.
+// Modal do scanner (protótipo): câmera full-screen, moldura de foco com scanline
+// animada, header e card do item. "Registrar Item" captura a foto e sobe pro S3
+// (via presigned URL). Sempre escuro (câmera), independente do tema.
 export default function ScanScreen() {
   const router = useRouter();
+  const [permission, requestPermission] = useCameraPermissions();
+  const cameraRef = useRef<CameraView>(null);
   const [frameH, setFrameH] = useState(0);
-  const progress = useSharedValue(0);
+  const { state, error, upload, reset } = useScan();
 
+  const progress = useSharedValue(0);
   useEffect(() => {
-    // Sobe e desce a linha continuamente (yoyo).
     progress.value = withRepeat(withTiming(1, { duration: 2400, easing: Easing.linear }), -1, true);
   }, [progress]);
-
   const lineStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: progress.value * Math.max(0, frameH - 2) }],
   }));
 
+  const handleRegister = async () => {
+    if (state === 'uploading') return;
+    if (state === 'error') return reset();
+
+    let uri: string | null = null;
+    try {
+      const photo = await cameraRef.current?.takePictureAsync({ quality: 0.7 });
+      uri = photo?.uri ?? null;
+    } catch {
+      // Câmera indisponível (ex.: web sem permissão) — segue com placeholder.
+    }
+    // Sem foto real, demonstra o upload com uma imagem placeholder.
+    const res = await upload(uri ?? 'https://picsum.photos/seed/scancapture/800/1200', 'jpg');
+    if (res) setTimeout(() => router.back(), 800);
+  };
+
+  // Enquanto a permissão carrega.
+  if (!permission) return <View style={styles.container} />;
+
+  // Sem permissão → pede acesso à câmera.
+  if (!permission.granted) {
+    return (
+      <View style={styles.container}>
+        <SafeAreaView edges={['top']} style={styles.header}>
+          <Pressable onPress={() => router.back()} style={styles.closeBtn}>
+            <X size={20} strokeWidth={2} color="#FFFFFF" />
+          </Pressable>
+        </SafeAreaView>
+        <View style={styles.permCenter}>
+          <View style={styles.permIcon}>
+            <Camera size={28} color="#FFFFFF" />
+          </View>
+          <ThemedText style={styles.permTitle}>Escanear itens</ThemedText>
+          <ThemedText style={styles.permText}>
+            Precisamos da câmera para reconhecer e registrar seus itens.
+          </ThemedText>
+          <Pressable onPress={requestPermission} style={styles.permBtn}>
+            <ThemedText style={styles.permBtnText}>Permitir câmera</ThemedText>
+          </Pressable>
+        </View>
+      </View>
+    );
+  }
+
+  const busy = state === 'uploading';
+  const done = state === 'done';
+
   return (
     <View style={styles.container}>
-      <Image
-        source={{ uri: 'https://picsum.photos/seed/scancard/800/1200' }}
-        style={StyleSheet.absoluteFill}
-        contentFit="cover"
-      />
+      <CameraView ref={cameraRef} style={StyleSheet.absoluteFill} facing="back" />
       <View style={styles.dim} />
 
       {/* Moldura de foco + scanline */}
-      <View
-        style={styles.frame}
-        onLayout={(e) => setFrameH(e.nativeEvent.layout.height)}>
+      <View style={styles.frame} onLayout={(e) => setFrameH(e.nativeEvent.layout.height)}>
         <Animated.View style={[styles.scanline, lineStyle]} />
       </View>
 
       {/* Header */}
       <SafeAreaView edges={['top']} style={styles.header}>
         <Pressable onPress={() => router.back()} style={styles.closeBtn}>
-          <BlurView intensity={40} tint="dark" style={StyleSheet.absoluteFill} />
           <View>
             <X size={20} strokeWidth={2} color="#FFFFFF" />
           </View>
         </Pressable>
         <View style={styles.aiBadge}>
-          <BlurView intensity={40} tint="dark" style={StyleSheet.absoluteFill} />
           <View>
             <Sparkles size={14} color="#FFFFFF" />
           </View>
@@ -69,11 +109,25 @@ export default function ScanScreen() {
       {/* Card do item detectado */}
       <SafeAreaView edges={['bottom']} style={styles.footer}>
         <View style={styles.detectCard}>
-          <BlurView intensity={60} tint="dark" style={StyleSheet.absoluteFill} />
           <ThemedText style={styles.detectName}>Blue-Eyes White Dragon</ThemedText>
           <ThemedText style={styles.detectCode}>LOB-001 • Rare</ThemedText>
-          <Pressable onPress={() => router.back()} style={styles.registerBtn}>
-            <ThemedText style={styles.registerText}>Registrar Item</ThemedText>
+          {error && <ThemedText style={styles.errorText}>{error}</ThemedText>}
+          <Pressable
+            onPress={handleRegister}
+            disabled={busy || done}
+            style={[styles.registerBtn, (busy || done) && styles.registerBtnBusy]}>
+            {busy ? (
+              <ActivityIndicator color="#000000" />
+            ) : done ? (
+              <View style={styles.registerDone}>
+                <Check size={18} strokeWidth={3} color="#000000" />
+                <ThemedText style={styles.registerText}>Registrado!</ThemedText>
+              </View>
+            ) : (
+              <ThemedText style={styles.registerText}>
+                {state === 'error' ? 'Tentar de novo' : 'Registrar Item'}
+              </ThemedText>
+            )}
           </Pressable>
         </View>
       </SafeAreaView>
@@ -137,7 +191,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.10)',
     backgroundColor: 'rgba(0,0,0,0.40)',
-    overflow: 'hidden',
   },
   aiBadge: {
     flexDirection: 'row',
@@ -149,7 +202,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.10)',
     backgroundColor: 'rgba(0,0,0,0.40)',
-    overflow: 'hidden',
   },
   aiText: {
     fontFamily: Fonts.semibold,
@@ -173,7 +225,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.60)',
     padding: Spacing.five,
     alignItems: 'center',
-    overflow: 'hidden',
   },
   detectName: {
     fontFamily: Fonts.medium,
@@ -191,14 +242,74 @@ const styles = StyleSheet.create({
     marginTop: Spacing.two,
     marginBottom: Spacing.five,
   },
+  errorText: {
+    fontFamily: Fonts.medium,
+    color: '#FB7185',
+    fontSize: 12,
+    textAlign: 'center',
+    marginBottom: Spacing.three,
+  },
   registerBtn: {
     alignSelf: 'stretch',
     backgroundColor: '#FFFFFF',
     borderRadius: 999,
     paddingVertical: 18,
     alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 56,
+  },
+  registerBtnBusy: {
+    opacity: 0.85,
+  },
+  registerDone: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
   },
   registerText: {
+    fontFamily: Fonts.medium,
+    color: '#000000',
+    fontSize: 15,
+  },
+  permCenter: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: Spacing.five,
+    gap: Spacing.two,
+  },
+  permIcon: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: 'rgba(255,255,255,0.10)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: Spacing.two,
+  },
+  permTitle: {
+    fontFamily: Fonts.medium,
+    color: '#FFFFFF',
+    fontSize: 24,
+    letterSpacing: -0.5,
+  },
+  permText: {
+    fontFamily: Fonts.regular,
+    color: 'rgba(255,255,255,0.6)',
+    fontSize: 14,
+    lineHeight: 20,
+    textAlign: 'center',
+    marginBottom: Spacing.four,
+  },
+  permBtn: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 999,
+    paddingVertical: 16,
+    paddingHorizontal: 32,
+    alignSelf: 'stretch',
+    alignItems: 'center',
+  },
+  permBtnText: {
     fontFamily: Fonts.medium,
     color: '#000000',
     fontSize: 15,
