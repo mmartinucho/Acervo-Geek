@@ -4,30 +4,35 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
+import { DEAL_MODE_LABELS } from '@/domain/entities/trade';
+import { formatPriceBRL } from '@/domain/entities/listing';
 import { AvatarInitials } from '@/presentation/components/avatar-initials';
 import { TradeStatusChip } from '@/presentation/components/trade-status-chip';
-import { useTrades } from '@/presentation/hooks/use-recent-activity';
+import { useDeals } from '@/presentation/hooks/use-deals';
 
-export default function TradesScreen() {
-  const { trades } = useTrades();
+export default function DealsScreen() {
+  const { deals } = useDeals();
+  const theme = useTheme();
 
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea} edges={['top']}>
-        <ThemedText type="subtitle" style={styles.title}>
-          Minhas trocas
-        </ThemedText>
+        <ThemedText style={styles.title}>Negócios</ThemedText>
         <FlatList
-          data={trades}
-          keyExtractor={(t) => t.id}
+          data={deals}
+          keyExtractor={(d) => d.id}
           contentContainerStyle={styles.listContent}
           renderItem={({ item }) => (
-            <ThemedView type="backgroundElement" style={styles.card}>
+            <ThemedView
+              type="backgroundElement"
+              style={[styles.card, { borderColor: theme.border }]}>
               <AvatarInitials username={item.counterpartyUsername} size={36} />
               <View style={styles.cardText}>
                 <ThemedText type="smallBold">@{item.counterpartyUsername}</ThemedText>
                 <ThemedText type="small" themeColor="textSecondary" numberOfLines={1}>
-                  {item.itemsSummary}
+                  {DEAL_MODE_LABELS[item.mode]} · {item.itemsSummary}
+                  {item.priceBRL != null ? ` · ${formatPriceBRL(item.priceBRL)}` : ''}
                 </ThemedText>
               </View>
               <TradeStatusChip status={item.status} />
@@ -35,7 +40,7 @@ export default function TradesScreen() {
           )}
           ListEmptyComponent={
             <ThemedText type="small" themeColor="textSecondary" style={styles.empty}>
-              Nenhuma troca ainda — proponha uma a partir dos seus matches!
+              Nenhum negócio ainda — deslize no Descobrir para começar.
             </ThemedText>
           }
         />
@@ -50,9 +55,13 @@ const styles = StyleSheet.create({
   },
   safeArea: {
     flex: 1,
-    paddingTop: Spacing.three,
+    paddingTop: Spacing.two,
   },
   title: {
+    fontSize: 32,
+    lineHeight: 38,
+    fontWeight: '800',
+    letterSpacing: -0.8,
     paddingHorizontal: Spacing.four,
     marginBottom: Spacing.three,
   },
@@ -64,7 +73,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.two,
-    borderRadius: Spacing.three,
+    borderRadius: 18,
+    borderWidth: 1,
     padding: Spacing.three,
   },
   cardText: {

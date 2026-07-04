@@ -1,0 +1,153 @@
+import { StyleSheet, View } from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import Animated, {
+  Extrapolation,
+  interpolate,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
+import { scheduleOnRN } from 'react-native-worklets';
+
+import { ThemedText } from '@/components/themed-text';
+import { Spacing } from '@/constants/theme';
+import { DeckListing, SwipeDirection } from '@/domain/entities/listing';
+import { DeckCard } from '@/presentation/components/deck/deck-card';
+
+const SWIPE_THRESHOLD = 110;
+const FLING_VELOCITY = 900;
+const EXIT_X = 520;
+
+function SwipeableCard({
+  listing,
+  onSwipe,
+}: {
+  listing: DeckListing;
+  onSwipe: (direction: SwipeDirection) => void;
+}) {
+  const tx = useSharedValue(0);
+  const ty = useSharedValue(0);
+
+  const pan = Gesture.Pan()
+    .onUpdate((e) => {
+      tx.value = e.translationX;
+      ty.value = e.translationY * 0.35;
+    })
+    .onEnd((e) => {
+      const shouldFling =
+        Math.abs(tx.value) > SWIPE_THRESHOLD || Math.abs(e.velocityX) > FLING_VELOCITY;
+      if (shouldFling) {
+        const sign = Math.sign(tx.value || e.velocityX);
+        const direction: SwipeDirection = sign > 0 ? 'want' : 'pass';
+        tx.value = withTiming(sign * EXIT_X, { duration: 180 }, () => {
+          scheduleOnRN(onSwipe, direction);
+        });
+        ty.value = withTiming(ty.value + 32, { duration: 180 });
+      } else {
+        tx.value = withSpring(0);
+        ty.value = withSpring(0);
+      }
+    });
+
+  const cardStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateX: tx.value },
+      { translateY: ty.value },
+      { rotate: `${interpolate(tx.value, [-220, 220], [-11, 11])}deg` },
+    ],
+  }));
+
+  const wantStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(tx.value, [16, SWIPE_THRESHOLD], [0, 1], Extrapolation.CLAMP),
+  }));
+
+  const passStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(tx.value, [-SWIPE_THRESHOLD, -16], [1, 0], Extrapolation.CLAMP),
+  }));
+
+  return (
+    <GestureDetector gesture={pan}>
+      <Animated.View style={[StyleSheet.absoluteFill, cardStyle]}>
+        <DeckCard listing={listing} />
+        <Animated.View style={[styles.stamp, styles.wantStamp, wantStyle]}>
+          <ThemedText type="smallBold" style={[styles.stampText, { color: '#16A34A' }]}>
+            QUERO
+          </ThemedText>
+        </Animated.View>
+        <Animated.View style={[styles.stamp, styles.passStamp, passStyle]}>
+          <ThemedText type="smallBold" style={[styles.stampText, { color: '#DC2626' }]}>
+            PASSO
+          </ThemedText>
+        </Animated.View>
+      </Animated.View>
+    </GestureDetector>
+  );
+}
+
+export function SwipeDeck({
+  cards,
+  onSwipe,
+}: {
+  cards: DeckListing[];
+  onSwipe: (direction: SwipeDirection) => void;
+}) {
+  const visible = cards.slice(0, 3);
+
+  return (
+    <View style={styles.stack}>
+      {visible
+        .map((listing, index) =>
+          index === 0 ? (
+            // key = id remonta o cartão do topo com os gestos zerados.
+            <SwipeableCard key={listing.id} listing={listing} onSwipe={onSwipe} />
+          ) : (
+            <View
+              key={listing.id}
+              style={[
+                StyleSheet.absoluteFill,
+                {
+                  transform: [{ scale: 1 - index * 0.04 }, { translateY: index * 12 }],
+                  opacity: 1 - index * 0.25,
+                },
+              ]}
+              pointerEvents="none">
+              <DeckCard listing={listing} />
+            </View>
+          ),
+        )
+        .reverse()}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  stack: {
+    flex: 1,
+  },
+  stamp: {
+    position: 'absolute',
+    top: Spacing.four,
+    borderWidth: 2.5,
+    borderRadius: Spacing.two,
+    paddingHorizontal: Spacing.two + 2,
+    paddingVertical: Spacing.one,
+    transform: [{ rotate: '-12deg' }],
+  },
+  wantStamp: {
+    left: Spacing.four,
+    borderColor: '#22C55E',
+    backgroundColor: 'rgba(34, 197, 94, 0.12)',
+  },
+  passStamp: {
+    right: Spacing.four,
+    borderColor: '#EF4444',
+    backgroundColor: 'rgba(239, 68, 68, 0.12)',
+    transform: [{ rotate: '12deg' }],
+  },
+  stampText: {
+    fontSize: 18,
+    lineHeight: 24,
+    letterSpacing: 2,
+  },
+});

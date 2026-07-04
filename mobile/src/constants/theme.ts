@@ -9,24 +9,36 @@ import { Platform } from 'react-native';
 
 export const Colors = {
   light: {
-    text: '#000000',
-    background: '#ffffff',
-    backgroundElement: '#F0F0F3',
-    backgroundSelected: '#E0E1E6',
-    textSecondary: '#60646C',
-    tint: '#7C3AED',
+    text: '#0B0B12',
+    background: '#F7F7FA',
+    backgroundElement: '#FFFFFF',
+    backgroundSelected: '#EEEEF3',
+    textSecondary: '#71717F',
+    border: '#EAEAF0',
+    tint: '#6D4AFF',
     onTint: '#FFFFFF',
   },
   dark: {
-    text: '#ffffff',
-    background: '#000000',
-    backgroundElement: '#212225',
-    backgroundSelected: '#2E3135',
-    textSecondary: '#B0B4BA',
-    tint: '#A78BFA',
-    onTint: '#1E1B4B',
+    text: '#F5F5F7',
+    background: '#0A0A0F',
+    backgroundElement: '#17171F',
+    backgroundSelected: '#22222C',
+    textSecondary: '#9A9AA8',
+    border: '#24242E',
+    tint: '#8B6DFF',
+    onTint: '#0A0A0F',
   },
 } as const;
+
+// Gradientes de marca por categoria — dão personalidade ao card sem foto real.
+export const CategoryGradients = {
+  card: ['#7C5CFF', '#4B2FD6'],
+  figure: ['#FF8A4C', '#E0463B'],
+  comic: ['#3B82F6', '#1D4ED8'],
+  game: ['#22C55E', '#0E9F6E'],
+} as const;
+
+export const BrandGradient = ['#8B6DFF', '#6D4AFF'] as const;
 
 export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;
 

@@ -6,25 +6,17 @@ export type TradeStatus =
   | 'cancelled'
   | 'disputed';
 
-export interface TradeSummary {
+export type DealMode = 'trade' | 'purchase' | 'sale';
+
+export interface DealSummary {
   id: string;
   counterpartyUsername: string;
+  mode: DealMode;
   status: TradeStatus;
   itemsSummary: string;
+  priceBRL?: number;
   updatedAt: Date;
 }
-
-export interface ReceivedReview {
-  id: string;
-  reviewerUsername: string;
-  rating: number;
-  comment?: string;
-  createdAt: Date;
-}
-
-export type ActivityEntry =
-  | { kind: 'trade'; trade: TradeSummary }
-  | { kind: 'review'; review: ReceivedReview };
 
 export const TRADE_STATUS_LABELS: Record<TradeStatus, string> = {
   proposed: 'Proposta',
@@ -33,4 +25,10 @@ export const TRADE_STATUS_LABELS: Record<TradeStatus, string> = {
   completed: 'Concluída',
   cancelled: 'Cancelada',
   disputed: 'Em disputa',
+};
+
+export const DEAL_MODE_LABELS: Record<DealMode, string> = {
+  trade: 'Troca',
+  purchase: 'Compra',
+  sale: 'Venda',
 };

@@ -1,11 +1,7 @@
+import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
-import { Text } from 'react-native';
 
 import { useTheme } from '@/hooks/use-theme';
-
-function TabIcon({ glyph, focused }: { glyph: string; focused: boolean }) {
-  return <Text style={{ fontSize: 20, opacity: focused ? 1 : 0.45 }}>{glyph}</Text>;
-}
 
 export default function TabsLayout() {
   const theme = useTheme();
@@ -16,34 +12,37 @@ export default function TabsLayout() {
         headerShown: false,
         tabBarActiveTintColor: theme.tint,
         tabBarInactiveTintColor: theme.textSecondary,
-        tabBarStyle: { backgroundColor: theme.background },
+        tabBarStyle: { backgroundColor: theme.background, borderTopWidth: 0 },
+        tabBarLabelStyle: { fontWeight: '600' },
       }}>
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Início',
-          tabBarIcon: ({ focused }) => <TabIcon glyph="🏠" focused={focused} />,
+          title: 'Descobrir',
+          tabBarIcon: ({ color }) => <Ionicons name="albums-outline" size={22} color={color} />,
         }}
       />
       <Tabs.Screen
         name="search"
         options={{
           title: 'Buscar',
-          tabBarIcon: ({ focused }) => <TabIcon glyph="🔍" focused={focused} />,
+          tabBarIcon: ({ color }) => <Ionicons name="search-outline" size={22} color={color} />,
         }}
       />
       <Tabs.Screen
         name="trades"
         options={{
-          title: 'Trocas',
-          tabBarIcon: ({ focused }) => <TabIcon glyph="🤝" focused={focused} />,
+          title: 'Negócios',
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="swap-horizontal-outline" size={22} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: 'Perfil',
-          tabBarIcon: ({ focused }) => <TabIcon glyph="👤" focused={focused} />,
+          tabBarIcon: ({ color }) => <Ionicons name="person-outline" size={22} color={color} />,
         }}
       />
     </Tabs>

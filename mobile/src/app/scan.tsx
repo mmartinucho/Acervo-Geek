@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
 
@@ -16,7 +17,7 @@ export default function ScanScreen() {
   return (
     <ThemedView style={styles.container}>
       <View style={[styles.viewfinder, { borderColor: theme.tint }]}>
-        <ThemedText style={styles.cameraIcon}>📷</ThemedText>
+        <Ionicons name="camera-outline" size={56} color={theme.textSecondary} />
         <ThemedText type="smallBold" style={styles.centered}>
           Aponte a câmera para o item
         </ThemedText>
@@ -55,10 +56,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: Spacing.two,
     padding: Spacing.four,
-  },
-  cameraIcon: {
-    fontSize: 48,
-    lineHeight: 56,
   },
   centered: {
     textAlign: 'center',

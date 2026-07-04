@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -8,10 +9,10 @@ import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
 const CATEGORIES = [
-  { key: 'card', label: '🃏 Cards' },
-  { key: 'figure', label: '🗿 Figures' },
-  { key: 'comic', label: '📚 HQs' },
-  { key: 'game', label: '🎮 Games' },
+  { key: 'card', label: 'Cards' },
+  { key: 'figure', label: 'Figures' },
+  { key: 'comic', label: 'HQs' },
+  { key: 'game', label: 'Games' },
 ];
 
 export default function SearchScreen() {
@@ -22,17 +23,21 @@ export default function SearchScreen() {
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea} edges={['top']}>
-        <ThemedText type="subtitle">Buscar</ThemedText>
-        <TextInput
-          value={query}
-          onChangeText={setQuery}
-          placeholder="Nome do item, franquia ou set…"
-          placeholderTextColor={theme.textSecondary}
+        <ThemedText style={styles.title}>Buscar</ThemedText>
+        <View
           style={[
-            styles.input,
-            { backgroundColor: theme.backgroundElement, color: theme.text },
-          ]}
-        />
+            styles.inputWrap,
+            { backgroundColor: theme.backgroundElement, borderColor: theme.border },
+          ]}>
+          <Ionicons name="search" size={18} color={theme.textSecondary} />
+          <TextInput
+            value={query}
+            onChangeText={setQuery}
+            placeholder="Nome do item, franquia ou set…"
+            placeholderTextColor={theme.textSecondary}
+            style={[styles.input, { color: theme.text }]}
+          />
+        </View>
         <View style={styles.chips}>
           {CATEGORIES.map((c) => {
             const selected = category === c.key;
@@ -42,7 +47,10 @@ export default function SearchScreen() {
                 onPress={() => setCategory(selected ? null : c.key)}
                 style={[
                   styles.chip,
-                  { backgroundColor: selected ? theme.tint : theme.backgroundElement },
+                  {
+                    backgroundColor: selected ? theme.tint : theme.backgroundElement,
+                    borderColor: selected ? theme.tint : theme.border,
+                  },
                 ]}>
                 <ThemedText
                   type="smallBold"
@@ -72,13 +80,26 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     paddingHorizontal: Spacing.four,
-    paddingTop: Spacing.three,
+    paddingTop: Spacing.two,
     gap: Spacing.three,
   },
-  input: {
-    borderRadius: Spacing.two,
+  title: {
+    fontSize: 32,
+    lineHeight: 38,
+    fontWeight: '800',
+    letterSpacing: -0.8,
+  },
+  inputWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+    borderRadius: 14,
+    borderWidth: 1,
     paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.two + 2,
+  },
+  input: {
+    flex: 1,
+    paddingVertical: Spacing.three,
     fontSize: 16,
   },
   chips: {
@@ -88,8 +109,9 @@ const styles = StyleSheet.create({
   },
   chip: {
     borderRadius: 999,
+    borderWidth: 1,
     paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.one + 2,
+    paddingVertical: Spacing.one + 3,
   },
   placeholder: {
     flex: 1,
