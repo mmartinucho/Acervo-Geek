@@ -45,7 +45,7 @@ function RootNavigator() {
       <Stack.Screen name="(auth)" options={{ headerShown: false }} />
       <Stack.Screen name="select-universe" options={{ headerShown: false }} />
       <Stack.Screen name="onboarding" options={{ headerShown: false }} />
-      <Stack.Screen name="scan" options={{ presentation: 'modal', title: 'Escanear item' }} />
+      <Stack.Screen name="scan" options={{ presentation: 'modal', headerShown: false }} />
     </Stack>
   );
 }
