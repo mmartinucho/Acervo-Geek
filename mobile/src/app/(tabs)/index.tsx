@@ -11,6 +11,7 @@ import { Spacing, UniverseAccents } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useTheme } from '@/hooks/use-theme';
 import { BrandLogo } from '@/presentation/components/brand-logo';
+import { MatchOverlay } from '@/presentation/components/match-overlay';
 import { RadarPill } from '@/presentation/components/deck/radar-pill';
 import { SwipeDeck } from '@/presentation/components/deck/swipe-deck';
 import { PrimaryButton } from '@/presentation/components/primary-button';
@@ -127,34 +128,16 @@ export default function DiscoverScreen() {
         )}
       </SafeAreaView>
 
-      {/* Celebração de match (vira o overlay "Sinergia." na tela 4) */}
+      {/* Overlay "Sinergia." ao deslizar num match recíproco */}
       {celebration && (
-        <View style={styles.matchOverlay}>
-          <ThemedView type="backgroundElement" style={styles.matchCard}>
-            <ThemedText style={styles.matchEmoji}>⚽️</ThemedText>
-            <ThemedText type="display" style={{ color: accent }}>
-              Deu match!
-            </ThemedText>
-            <ThemedText type="small" themeColor="textSecondary" style={styles.matchText}>
-              {celebration.matchReason
-                ? `${celebration.matchReason}. Vocês têm as repetidas um do outro — troca na conta!`
-                : `@${celebration.owner.username} também quer figurinhas do seu álbum.`}
-            </ThemedText>
-            <PrimaryButton
-              title="Propor troca"
-              onPress={() => {
-                dismissCelebration();
-                router.push('/trades');
-              }}
-              style={styles.matchCta}
-            />
-            <Pressable onPress={dismissCelebration} style={styles.matchDismiss}>
-              <ThemedText type="smallBold" themeColor="textSecondary">
-                Continuar deslizando
-              </ThemedText>
-            </Pressable>
-          </ThemedView>
-        </View>
+        <MatchOverlay
+          listing={celebration}
+          onClose={dismissCelebration}
+          onContact={() => {
+            dismissCelebration();
+            router.push('/trades');
+          }}
+        />
       )}
     </ThemedView>
   );
@@ -250,38 +233,5 @@ const styles = StyleSheet.create({
   emptyCta: {
     alignSelf: 'stretch',
     marginTop: Spacing.four,
-  },
-  matchOverlay: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    bottom: 0,
-    left: 0,
-    backgroundColor: 'rgba(0,0,0,0.72)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: Spacing.four,
-    zIndex: 20,
-  },
-  matchCard: {
-    alignSelf: 'stretch',
-    borderRadius: 28,
-    padding: Spacing.five,
-    alignItems: 'center',
-    gap: Spacing.two,
-  },
-  matchEmoji: {
-    fontSize: 40,
-    lineHeight: 46,
-  },
-  matchText: {
-    textAlign: 'center',
-  },
-  matchCta: {
-    alignSelf: 'stretch',
-    marginTop: Spacing.two,
-  },
-  matchDismiss: {
-    paddingVertical: Spacing.one,
   },
 });
