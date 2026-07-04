@@ -1,0 +1,19 @@
+# Credenciais locais — NUNCA versionar
+Chave de acesso tempoararias.txt
+*.pem
+*.key
+
+# Arquivos de ambiente (mantém só o .example)
+.env
+.env.*
+!.env.example
+
+# Pasta duplicada acidental (conteúdo espelhado do repo)
+/Acervo-Geek/
+
+# Ferramentas locais
+.claude/
+
+# Supabase CLI (estado local/temporário)
+supabase/.temp/
+supabase/.branches/
