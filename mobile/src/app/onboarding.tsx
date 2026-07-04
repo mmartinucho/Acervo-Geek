@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
+import { Fonts, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { AlbumSlot, SLOT_STATE_LABELS, SlotState } from '@/domain/entities/collection-sheet';
 import { useAuth } from '@/presentation/auth/auth-context';
@@ -124,7 +124,7 @@ export default function OnboardingScreen() {
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
         <View style={styles.header}>
-          <ThemedText style={styles.title}>Monte seu álbum</ThemedText>
+          <ThemedText type="display">Monte seu álbum</ThemedText>
           <ThemedText type="small" themeColor="textSecondary">
             Toque em cada figurinha para marcar. É isso que alimenta seus matches.
           </ThemedText>
@@ -177,7 +177,6 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   safeArea: { flex: 1, paddingHorizontal: H_PAD, paddingTop: Spacing.two },
   header: { gap: Spacing.one },
-  title: { fontSize: 30, lineHeight: 36, fontWeight: '800', letterSpacing: -0.6 },
   legend: { flexDirection: 'row', gap: Spacing.four, marginTop: Spacing.two },
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   legendDot: { width: 14, height: 14, borderRadius: 5, borderWidth: 1 },
@@ -196,8 +195,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   specialStar: { position: 'absolute', top: 6, right: 7 },
-  chipNumber: { fontSize: 22, fontWeight: '800', letterSpacing: -0.5 },
-  chipName: { fontSize: 11, fontWeight: '600', maxWidth: '100%' },
+  chipNumber: { fontFamily: Fonts.display, fontSize: 22, letterSpacing: -0.5 },
+  chipName: { fontSize: 11, maxWidth: '100%' },
   stateBadge: {
     position: 'absolute',
     top: 6,
@@ -210,7 +209,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  dupBadgeText: { fontSize: 11, fontWeight: '800', color: '#7A4E00' },
+  dupBadgeText: { fontFamily: Fonts.bold, fontSize: 11, color: '#7A4E00' },
   footer: { gap: Spacing.two, paddingVertical: Spacing.three },
   summary: { textAlign: 'center' },
   cta: {

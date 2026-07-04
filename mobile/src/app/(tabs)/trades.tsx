@@ -25,7 +25,7 @@ export default function DealsScreen() {
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea} edges={['top']}>
-        <ThemedText style={styles.title}>Negócios</ThemedText>
+        <ThemedText type="display" style={styles.title}>Negócios</ThemedText>
         <FlatList
           data={deals}
           keyExtractor={(d) => d.id}
@@ -73,10 +73,6 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.two,
   },
   title: {
-    fontSize: 32,
-    lineHeight: 38,
-    fontWeight: '800',
-    letterSpacing: -0.8,
     paddingHorizontal: Spacing.four,
     marginBottom: Spacing.three,
   },

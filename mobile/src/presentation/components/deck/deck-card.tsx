@@ -3,7 +3,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { CategoryGradients, SpecialStickerGradient } from '@/constants/theme';
+import { CategoryGradients, Fonts, SpecialStickerGradient } from '@/constants/theme';
 import { CONDITION_LABELS, ItemCondition } from '@/domain/entities/item';
 import { DeckListing, formatDistance, formatPriceBRL } from '@/domain/entities/listing';
 
@@ -160,9 +160,9 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: '24%',
     alignSelf: 'center',
+    fontFamily: Fonts.display,
     fontSize: 120,
     lineHeight: 132,
-    fontWeight: '800',
     letterSpacing: 2,
     color: 'rgba(255,255,255,0.22)',
   },
@@ -186,6 +186,7 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
   },
   specialChipText: {
+    fontFamily: Fonts.bold,
     color: '#7A4E00',
     fontSize: 11,
     letterSpacing: 1,
@@ -200,6 +201,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   glassChipText: {
+    fontFamily: Fonts.semibold,
     color: '#FFFFFF',
     fontSize: 13,
   },
@@ -231,15 +233,16 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   matchPillText: {
+    fontFamily: Fonts.semibold,
     color: '#FFFFFF',
     fontSize: 12,
     flexShrink: 1,
   },
   itemName: {
+    fontFamily: Fonts.display,
     color: '#FFFFFF',
     fontSize: 28,
     lineHeight: 32,
-    fontWeight: '800',
     letterSpacing: -0.6,
   },
   metaRow: {
@@ -253,9 +256,9 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   itemMeta: {
+    fontFamily: Fonts.medium,
     color: 'rgba(255,255,255,0.85)',
     fontSize: 15,
-    fontWeight: '500',
   },
   ownerRow: {
     flexDirection: 'row',
@@ -264,17 +267,18 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
   ownerText: {
+    fontFamily: Fonts.semibold,
     color: '#FFFFFF',
     fontSize: 13,
-    fontWeight: '600',
   },
   ownerRep: {
+    fontFamily: Fonts.semibold,
     color: 'rgba(255,255,255,0.9)',
     fontSize: 13,
-    fontWeight: '600',
     marginLeft: 2,
   },
   ownerCity: {
+    fontFamily: Fonts.medium,
     color: 'rgba(255,255,255,0.72)',
     fontSize: 13,
     flexShrink: 1,

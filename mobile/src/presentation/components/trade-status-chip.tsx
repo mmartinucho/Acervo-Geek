@@ -16,7 +16,7 @@ export function TradeStatusChip({ status }: { status: TradeStatus }) {
   const colors = STATUS_COLORS[status];
   return (
     <View style={[styles.chip, { backgroundColor: colors.bg }]}>
-      <ThemedText type="small" style={[styles.label, { color: colors.fg }]}>
+      <ThemedText type="smallBold" style={[styles.label, { color: colors.fg }]}>
         {TRADE_STATUS_LABELS[status]}
       </ThemedText>
     </View>

@@ -23,7 +23,7 @@ export default function SearchScreen() {
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea} edges={['top']}>
-        <ThemedText style={styles.title}>Buscar</ThemedText>
+        <ThemedText type="display">Buscar</ThemedText>
         <View
           style={[
             styles.inputWrap,
@@ -82,12 +82,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.four,
     paddingTop: Spacing.two,
     gap: Spacing.three,
-  },
-  title: {
-    fontSize: 32,
-    lineHeight: 38,
-    fontWeight: '800',
-    letterSpacing: -0.8,
   },
   inputWrap: {
     flexDirection: 'row',

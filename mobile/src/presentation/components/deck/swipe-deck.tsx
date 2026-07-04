@@ -11,7 +11,7 @@ import Animated, {
 import { scheduleOnRN } from 'react-native-worklets';
 
 import { ThemedText } from '@/components/themed-text';
-import { Spacing } from '@/constants/theme';
+import { Fonts, Spacing } from '@/constants/theme';
 import { DeckListing, SwipeDirection } from '@/domain/entities/listing';
 import { DeckCard } from '@/presentation/components/deck/deck-card';
 
@@ -146,6 +146,7 @@ const styles = StyleSheet.create({
     transform: [{ rotate: '12deg' }],
   },
   stampText: {
+    fontFamily: Fonts.display,
     fontSize: 18,
     lineHeight: 24,
     letterSpacing: 2,

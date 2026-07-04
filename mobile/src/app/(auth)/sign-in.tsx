@@ -66,15 +66,17 @@ export default function SignInScreen() {
             <View style={styles.logoBadge}>
               <Ionicons name="albums" size={28} color="#FFF" />
             </View>
-            <ThemedText style={styles.brandName}>Acervo Geek</ThemedText>
-            <ThemedText style={styles.brandTagline}>
+            <ThemedText type="display" style={styles.brandName}>
+              Acervo Geek
+            </ThemedText>
+            <ThemedText type="small" style={styles.brandTagline}>
               Troque e venda figurinhas da Copa por perto
             </ThemedText>
           </View>
 
           <View style={styles.cardWrap}>
           <ThemedView type="backgroundElement" style={[styles.card, { borderColor: theme.border }]}>
-            <ThemedText style={styles.cardTitle}>
+            <ThemedText type="title" style={styles.cardTitle}>
               {isSignUp ? 'Criar conta' : 'Entrar'}
             </ThemedText>
 
@@ -181,20 +183,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   brandName: {
-    fontSize: 30,
-    lineHeight: 36,
-    fontWeight: '800',
-    letterSpacing: -0.6,
+    fontSize: 32,
+    lineHeight: 38,
     color: '#FFFFFF',
   },
-  brandTagline: { color: 'rgba(255,255,255,0.9)', fontSize: 14 },
+  brandTagline: { color: 'rgba(255,255,255,0.9)' },
   card: {
     borderRadius: 24,
     borderWidth: 1,
     padding: Spacing.four,
     gap: Spacing.three,
   },
-  cardTitle: { fontSize: 20, fontWeight: '800', letterSpacing: -0.4 },
+  cardTitle: {},
   field: {
     flexDirection: 'row',
     alignItems: 'center',

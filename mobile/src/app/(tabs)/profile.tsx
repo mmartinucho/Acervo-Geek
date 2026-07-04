@@ -17,7 +17,9 @@ function StatBox({ value, label }: { value: string; label: string }) {
     <ThemedView
       type="backgroundElement"
       style={[styles.statBox, { borderColor: theme.border }]}>
-      <ThemedText style={styles.statValue}>{value}</ThemedText>
+      <ThemedText type="display" style={styles.statValue}>
+        {value}
+      </ThemedText>
       <ThemedText type="small" themeColor="textSecondary">
         {label}
       </ThemedText>
@@ -44,7 +46,9 @@ export default function ProfileScreen() {
           <View style={[styles.avatarRing, { borderColor: theme.background }]}>
             <AvatarInitials username={username} size={84} />
           </View>
-          <ThemedText style={styles.name}>@{username}</ThemedText>
+          <ThemedText type="display" style={styles.name}>
+            @{username}
+          </ThemedText>
           <View style={styles.repRow}>
             <Ionicons name="star" size={15} color="#FBBF24" />
             <ThemedText type="smallBold">4.7</ThemedText>
@@ -120,8 +124,6 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 26,
     lineHeight: 32,
-    fontWeight: '800',
-    letterSpacing: -0.5,
   },
   repRow: {
     flexDirection: 'row',
@@ -143,8 +145,6 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 26,
     lineHeight: 32,
-    fontWeight: '800',
-    letterSpacing: -0.5,
   },
   primaryCta: {
     flexDirection: 'row',

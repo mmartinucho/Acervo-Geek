@@ -39,7 +39,7 @@ export default function DiscoverScreen() {
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea} edges={['top']}>
         <View style={styles.header}>
-          <ThemedText style={styles.title}>Descobrir</ThemedText>
+          <ThemedText type="display">Descobrir</ThemedText>
           <RadarPill radiusKm={radiusKm} onChange={setRadiusKm} />
         </View>
 
@@ -77,7 +77,7 @@ export default function DiscoverScreen() {
               />
               {outOfRange > 0 ? (
                 <>
-                  <ThemedText style={styles.emptyTitle}>Ninguém por perto</ThemedText>
+                  <ThemedText type="title">Ninguém por perto</ThemedText>
                   <ThemedText type="small" themeColor="textSecondary" style={styles.emptyHint}>
                     {outOfRange} {outOfRange === 1 ? 'match está' : 'matches estão'} fora do seu
                     radar de {radiusKm} km. Amplie o raio para encontrá-{outOfRange === 1 ? 'lo' : 'los'}.
@@ -92,7 +92,7 @@ export default function DiscoverScreen() {
                 </>
               ) : (
                 <>
-                  <ThemedText style={styles.emptyTitle}>Você viu tudo por aqui</ThemedText>
+                  <ThemedText type="title">Você viu tudo por aqui</ThemedText>
                   <ThemedText type="small" themeColor="textSecondary" style={styles.emptyHint}>
                     Volte mais tarde ou recomece o deck.
                   </ThemedText>
@@ -146,7 +146,7 @@ export default function DiscoverScreen() {
         <View style={styles.matchOverlay}>
           <ThemedView type="backgroundElement" style={styles.matchCard}>
             <ThemedText style={styles.matchEmoji}>⚽️</ThemedText>
-            <ThemedText style={[styles.matchTitle, { color: theme.tint }]}>
+            <ThemedText type="display" style={[styles.matchTitle, { color: theme.tint }]}>
               Deu match!
             </ThemedText>
             <ThemedText type="small" themeColor="textSecondary" style={styles.matchText}>
@@ -190,12 +190,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-  },
-  title: {
-    fontSize: 32,
-    lineHeight: 38,
-    fontWeight: '800',
-    letterSpacing: -0.8,
   },
   segment: {
     flexDirection: 'row',
@@ -258,10 +252,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: Spacing.two,
   },
-  emptyTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-  },
   emptyHint: {
     textAlign: 'center',
   },
@@ -296,7 +286,6 @@ const styles = StyleSheet.create({
   matchTitle: {
     fontSize: 32,
     lineHeight: 40,
-    fontWeight: '800',
   },
   matchText: {
     textAlign: 'center',
