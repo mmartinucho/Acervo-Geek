@@ -26,16 +26,17 @@ function RootNavigator() {
   useEffect(() => {
     if (isLoading) return;
     const inAuthGroup = segments[0] === '(auth)';
-    const inOnboarding = segments[0] === 'onboarding';
+    // Onboarding = escolher universos ("Seus mundos.") → montar o álbum ("Fichário.").
+    const inOnboardingFlow = segments[0] === 'select-universe' || segments[0] === 'onboarding';
 
     if (requiresAuth && !user && !inAuthGroup) {
       router.replace('/sign-in');
     } else if (user && inAuthGroup) {
       router.replace('/');
-    } else if (user && needsOnboarding && !inOnboarding) {
-      // Logado mas sem coleção → monta o álbum antes de descobrir matches.
-      // (Só força a entrada; sair é decisão do usuário via "Concluir".)
-      router.replace('/onboarding');
+    } else if (user && needsOnboarding && !inOnboardingFlow) {
+      // Logado mas sem coleção → escolhe os universos e monta o álbum antes de
+      // descobrir matches. (Só força a entrada; concluir é decisão do usuário.)
+      router.replace('/select-universe');
     }
   }, [user, isLoading, requiresAuth, needsOnboarding, segments, router]);
 

@@ -78,15 +78,16 @@ function UniverseRow({
 export default function SelectUniverseScreen() {
   const router = useRouter();
   const dark = useColorScheme() !== 'light';
-  const { themes } = useAccent();
+  const { themes, setActiveTheme } = useAccent();
   const [selected, setSelected] = useState<string[]>([]);
 
   const toggle = (id: string) =>
     setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (selected.length === 0) return;
-    // A persistência do universo ativo (setActiveTheme) entra na Fase 4.
+    // O primeiro universo escolhido vira o ativo (acento do app); depois monta o álbum.
+    await setActiveTheme(selected[0]!);
     router.replace('/onboarding');
   };
 
